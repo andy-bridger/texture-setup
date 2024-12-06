@@ -8,4 +8,4 @@ A ewald sphere 'volume' showing the polychromatic radiation
 
 Some reciprocal lattices
 
-<img height="500" src="C:\Users\kcd17618\Pictures\Screenshots\Screenshot%202024-12-06%20122647.png" width="500"/>
+![Screenshot 2024-12-06 122647](https://github.com/user-attachments/assets/0e0b8e26-3ee7-4b3c-bbf5-2ed06bb7d2e2)
