@@ -194,7 +194,6 @@ class SphereConstructions():
 
     def get_detector_signal(self, thresh = 0.1):
         q_of_interest = self.sample.q_of_interest
-        print(self.sample.lab_space_rlatts.shape, q_of_interest.shape, self.Ks.shape)
         disp_vecs = self.sample.lab_space_rlatts[None, :,:,q_of_interest] - self.Ks[:,None,:,None]
         dists = np.linalg.norm(disp_vecs, axis = 2)
         relevant_dists = np.where(dists < thresh, np.exp(-dists), 0)
@@ -251,7 +250,6 @@ class SphereConstructions():
         svec = spoint - oppole
         u = -oppole[2]/svec[2]
         proj_point = (u*svec) + oppole
-        #print('point ',point, 'spoint ',spoint,'oppole ',oppole, 'svec ', svec, 'proj_point ', proj_point)
         return self.orient_to_pole(proj_point, self.north_pole)
 
 
@@ -317,7 +315,6 @@ class SphereConstructions():
         current_is = self.pole_figure_intensities[:,3]
         for di, dr in enumerate(self.detector_readout):
             pos = current_is.searchsorted(dr)
-            print(self.pole_figure_points[di].shape, np.array((dr,)).shape )
             npfi = np.concatenate((self.pole_figure_points[di], np.array((dr,))))
             self.pole_figure_intensities = np.concatenate((self.pole_figure_intensities[:pos,:], npfi[None,:], self.pole_figure_intensities[pos:,:]))
 
