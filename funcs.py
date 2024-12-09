@@ -75,10 +75,11 @@ class Sample:
         self.rl_qs = self.rl_qs[q_mask]
         self.reciprocal_lattice = self.reciprocal_lattice[:,q_mask]
         self.rl_alphas = np.where(np.abs(self.rl_qs - self.q_probe) < 0.1, 5, 0.25)
+        self.q_of_interest =  np.where(np.abs(self.rl_qs - self.q_probe)<0.1, True, False)
     def orient_reciprocal_lattices_to_sample(self):
         self.sample_space_rlatts = [co.apply(self.reciprocal_lattice.T).T for co in self.cell_orientations]
     def orient_reciprocal_lattices_to_lab(self):
-        self.lab_space_rlatts = [self.rot.apply(rl.T).T for rl in self.sample_space_rlatts]
+        self.lab_space_rlatts = np.asarray([self.rot.apply(rl.T).T for rl in self.sample_space_rlatts])
 
 
 
@@ -88,6 +89,7 @@ class SphereConstructions():
     def __init__(self, source, detectors, sample, ewald_radii, pole_radius, sample_view_axis, detector_colors = None):
         self.source = source
         self.detectors = detectors
+        self.pole_figure_intensities = np.array((0, 0, 0, 0))[None,:]
         if detector_colors == None:
             self.detector_colors = ['black']*len(detectors)
         else:
@@ -190,18 +192,29 @@ class SphereConstructions():
             Gs.append(roots[roots!=0]*K)
         return np.asarray(Gs)
 
+    def get_detector_signal(self, thresh = 0.1):
+        q_of_interest = self.sample.q_of_interest
+        print(self.sample.lab_space_rlatts.shape, q_of_interest.shape, self.Ks.shape)
+        disp_vecs = self.sample.lab_space_rlatts[None, :,:,q_of_interest] - self.Ks[:,None,:,None]
+        dists = np.linalg.norm(disp_vecs, axis = 2)
+        relevant_dists = np.where(dists < thresh, np.exp(-dists), 0)
+        self.detector_readout = relevant_dists.sum(axis = (1,2))
+
     def setup_view(self):
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(projection='3d')
-        gs0 = self.fig.add_gridspec(4, 10)
-        self.ax.set_subplotspec(gs0[:3, :8])
-        self.ax_new = self.fig.add_subplot(gs0[:3, 8:])
+        gs0 = self.fig.add_gridspec(5, 10)
+        self.ax.set_subplotspec(gs0[:4, :8])
+        self.ax_new = self.fig.add_subplot(gs0[:2, 8:])
+        self.calc_pf_ax = self.fig.add_subplot(gs0[2:4, 8:])
         self.ax_new.set_xlim([-self.pole_radius-0.1, self.pole_radius+0.1])
         self.ax_new.set_ylim([-self.pole_radius-0.1, self.pole_radius+0.1])
         self.ax_new.set_aspect('equal')
+        self.calc_pf_ax.set_aspect('equal')
 
         self.ax.set_axis_off()
         self.ax_new.set_axis_off()
+
 
 
     def calc_ewald(self):
@@ -301,18 +314,46 @@ class SphereConstructions():
 
     def get_inplane_pole_figure(self):
         self.pole_figure_points = self.sample.rot.apply(self.pole_K_projs, inverse=True)
+        current_is = self.pole_figure_intensities[:,3]
+        for di, dr in enumerate(self.detector_readout):
+            pos = current_is.searchsorted(dr)
+            print(self.pole_figure_points[di].shape, np.array((dr,)).shape )
+            npfi = np.concatenate((self.pole_figure_points[di], np.array((dr,))))
+            self.pole_figure_intensities = np.concatenate((self.pole_figure_intensities[:pos,:], npfi[None,:], self.pole_figure_intensities[pos:,:]))
 
-    def plot_pole_figure(self):
-        if np.where(self.sample_view_axis ==1)[0] == 0:
-            self.ax_new.scatter(self.pole_figure_points[:,1], self.pole_figure_points[:,2], c = self.detector_colors)
-        if np.where(self.sample_view_axis ==1)[0] == 1:
-            self.ax_new.scatter(self.pole_figure_points[:,0], self.pole_figure_points[:,2], c = self.detector_colors)
-        if np.where(self.sample_view_axis ==1)[0] == 2:
-            self.ax_new.scatter(self.pole_figure_points[:,0], self.pole_figure_points[:,1], c = self.detector_colors)
+
+
+        #self.pole_figure_intensities = np.concatenate((self.pole_figure_intensities,
+        #                                               np.concatenate((self.pole_figure_points, self.detector_readout[:,None]),
+        #                                                              axis = 1),
+        #                                               ), axis = 0)
+
+    def plot_pole_figure(self, chosen_ax = None, use_intensities = False):
+        if chosen_ax == None:
+            chosen_ax = self.ax_new
+
+        if use_intensities == False:
+            if np.where(self.sample_view_axis ==1)[0] == 0:
+                chosen_ax.scatter(self.pole_figure_points[:,1], self.pole_figure_points[:,2], c = self.detector_colors)
+            if np.where(self.sample_view_axis ==1)[0] == 1:
+                chosen_ax.scatter(self.pole_figure_points[:,0], self.pole_figure_points[:,2], c = self.detector_colors)
+            if np.where(self.sample_view_axis ==1)[0] == 2:
+                chosen_ax.scatter(self.pole_figure_points[:,0], self.pole_figure_points[:,1], c = self.detector_colors)
+        else:
+            if np.where(self.sample_view_axis ==1)[0] == 0:
+                chosen_ax.scatter(self.pole_figure_intensities[:,1], self.pole_figure_intensities[:,2],
+                                    c = self.pole_figure_intensities[:,3])
+            if np.where(self.sample_view_axis ==1)[0] == 1:
+                chosen_ax.scatter(self.pole_figure_intensities[:,0], self.pole_figure_intensities[:,2],
+                                    c = self.pole_figure_intensities[:,3])
+            if np.where(self.sample_view_axis ==1)[0] == 2:
+                chosen_ax.scatter(self.pole_figure_intensities[:,0], self.pole_figure_intensities[:,1],
+                                    c = self.pole_figure_intensities[:,3])
 
         eq = self.equator()
 
-        self.ax_new.plot(eq[0], eq[1], c = 'grey')
+
+        chosen_ax.plot(eq[0], eq[1], c = 'grey')
 
     def plot_all(self):
         self.update()
@@ -323,9 +364,12 @@ class SphereConstructions():
         self.show_sample()
         self.calc_pole()
         self.show_pole()
+        self.get_detector_signal()
 
         self.get_inplane_pole_figure()
         self.plot_pole_figure()
+        self.plot_pole_figure(chosen_ax=self.calc_pf_ax, use_intensities=True)
 
         self.ax.set_axis_off()
         self.ax_new.set_axis_off()
+        self.calc_pf_ax.set_axis_off()
