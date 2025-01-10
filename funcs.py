@@ -18,7 +18,9 @@ class Source:
         return self.name
 
 class Sample:
-    def __init__(self, position, orientation, cell_parameters, q_range, cell_orientations, cell_colors=None, q_probe = 1):
+    def __init__(self, position, orientation, cell_parameters, q_range,
+                 cell_orientations, cell_colors=None, q_probe = 1,
+                 sample_scale = 1):
         '''
         position: lab frame x,y,z coordiantes
         orientation: sample
@@ -27,6 +29,7 @@ class Sample:
         self.position = np.asarray(position)
         self.orient_array = orientation
         self.cell_parameters = cell_parameters
+        self.sample_scale = sample_scale
         self.a, self.b, self.c = cell_parameters
         self.v = self.a*self.b*self.c
         self.q_range = q_range
@@ -86,7 +89,8 @@ class Sample:
 
 
 class Constructions():
-    def __init__(self, source, detectors, sample, ewald_radii, pole_radius, sample_view_axis, detector_colors = None):
+    def __init__(self, source, detectors, sample, ewald_radii, pole_radius,
+                 sample_view_axis, detector_colors = None):
         self.source = source
         self.detectors = detectors
         self.pole_figure_intensities = np.array((0, 0, 0, 0))[None,:]
@@ -95,12 +99,18 @@ class Constructions():
         else:
             self.detector_colors = detector_colors
         self.sample = sample
+
         self.ewald_radii = ewald_radii
         self.ewald_radius = ewald_radii[0]
         self.pole_radius = pole_radius
         self.sample_view_axis = np.asarray(sample_view_axis)
         self.update()
         self.setup_view()
+        self.plot_lab_frame()
+        self.recip_sample = self.show_sample(ax = self.ax)
+        self.lab_sample = self.show_sample(ax=self.lab_ax, ratio=self.sample.sample_scale)
+        self.show_lab_K_vecs = False
+        self.lab_K_vecs = []
 
     def update(self):
         self.pole_view_axis = self.sample.get_view_in_lab_frame(self.sample_view_axis)
@@ -180,16 +190,23 @@ class Constructions():
             X,Y,Z = self.cuboid_data(offset, size, self.sample.lab_frame_axes)
         else:
             X,Y,Z = self.cuboid_data(offset, size, np.eye(3,3))
+        cube = []
         for i in range(2):  # Bottom/Top faces
-            ax.plot_surface(X[i, :, :], Y[i, :, :], Z[i, :, :], alpha=0.5, color=col[0])
+            cube.append(ax.plot_surface(X[i, :, :], Y[i, :, :], Z[i, :, :], alpha=0.5, color=col[0]))
         for i in range(2):  # Front/Back faces
-            ax.plot_surface(X[:, i, :], Y[:, i, :], Z[:, i, :], alpha=0.5, color=col[1])
+            cube.append(ax.plot_surface(X[:, i, :], Y[:, i, :], Z[:, i, :], alpha=0.5, color=col[1]))
         for i in range(2):  # Left/Right faces
-            ax.plot_surface(X[:, :, i], Y[:, :, i], Z[:, :, i], alpha=0.5, color=col[2])
+            cube.append(ax.plot_surface(X[:, :, i], Y[:, :, i], Z[:, :, i], alpha=0.5, color=col[2]))
+        return cube
 
+    def get_Ks(self):
+        norm = lambda x : x/np.linalg.norm(x)
+        ki = norm(self.sample.position - self.source.position)
+        Ks = [norm(norm(det.position - self.sample.position) - ki) for det in self.detectors]
+        return Ks
 
     def get_detector_Ks(self):
-        Ks = [self.source.position - det.position for det in self.detectors]
+        Ks = self.get_Ks()
         Gs = []
         for K in Ks:
             roots = self.sphere_line_intercept(np.zeros(3), K, -self.ki*self.ewald_radius, self.ewald_radius)
@@ -230,8 +247,8 @@ class Constructions():
 
     def show_sample(self, ax = None, ratio = 0.1):
         fig = self.fig
-        self.draw_cube(fig, ax, offset = (0,0, 0), size = self.ewald_radius*np.ones(3)*ratio)
-
+        cube = self.draw_cube(fig, ax, offset = (0,0, 0), size = self.ewald_radius*np.ones(3)*ratio)
+        return cube
 
     def show_ewald(self):
         fig = self.fig
@@ -358,20 +375,44 @@ class Constructions():
 
         chosen_ax.plot(eq[0], eq[1], c = 'grey')
 
+    def plot_lab_K_vecs(self):
+        lab_K_vecs = []
+        for idet, det in enumerate(self.detectors):
+            k_det = (self.detectors[idet].position - self.sample.position)
+            k_det_quiver_kwargs = {'color': 'grey', 'arrow_length_ratio': 0.1, 'alpha': 0.25}
+            for i, arg in enumerate(('X', 'Y', 'Z')):
+                k_det_quiver_kwargs[arg] = self.sample.position[i]
+            for i, arg in enumerate(('U', 'V', 'W')):
+                k_det_quiver_kwargs[arg] = k_det[i]
+            self.lab_ax.quiver(**k_det_quiver_kwargs)
+
+            k_quiver_kwargs = {'color': self.detector_colors[idet], 'arrow_length_ratio': 0.1, 'alpha': 0.25}
+            for i, arg in enumerate(('X', 'Y', 'Z')):
+                k_quiver_kwargs[arg] = self.sample.position[i]
+            for i, arg in enumerate(('U', 'V', 'W')):
+                k_quiver_kwargs[arg] = self.get_Ks()[idet][i]*np.linalg.norm(k_det)
+            self.lab_K_vecs.append(self.lab_ax.quiver(**k_quiver_kwargs))
+        return lab_K_vecs
+
+    def toggle_lab_K_vecs(self):
+        vis = self.lab_K_vecs[0]._visible
+        for v in self.lab_K_vecs:
+            v.set_visible(not vis)
+
     def plot_lab_frame(self):
-        self.show_sample(ax=self.lab_ax, ratio = 1)
         self.draw_cube(self.fig, self.lab_ax, offset = self.source.position,
                        col = ['grey']*3, size=[2,1,1], use_gonio= False)
         for idet, det in enumerate(self.detectors):
             self.draw_cube(self.fig, self.lab_ax, offset=det.position,
                            col=[self.detector_colors[idet]] * 3, size=[1, 1, 2], use_gonio=False)
-        self.lab_ax.set_aspect('equal')
-        quiver_kwargs = {}
+
+        k_i_quiver_kwargs = {'color':'grey', 'arrow_length_ratio': 0.1, 'alpha':0.25}
         for i, arg in enumerate(('X', 'Y', 'Z')):
-            quiver_kwargs[arg] = self.source.position[i]
+            k_i_quiver_kwargs[arg] = self.source.position[i]
         for i, arg in enumerate(('U', 'V', 'W')):
-            quiver_kwargs[arg] = (self.sample.position - self.source.position)[i]
-        self.lab_ax.quiver(**quiver_kwargs)
+            k_i_quiver_kwargs[arg] = (self.sample.position - self.source.position)[i]
+        self.lab_ax.quiver(**k_i_quiver_kwargs)
+
 
 
 
@@ -380,11 +421,13 @@ class Constructions():
         self.update()
         self.ax.clear()
         self.ax_new.clear()
-        self.lab_ax.clear()
+        for surf in self.lab_sample:
+            surf.remove()
         self.calc_ewald()
         self.show_ewald()
-        self.show_sample(ax = self.ax)
-        self.plot_lab_frame()
+        self.recip_sample = self.show_sample(ax = self.ax)
+        self.lab_sample = self.show_sample(ax=self.lab_ax, ratio=self.sample.sample_scale)
+        self.lab_k_vecs = self.plot_lab_K_vecs()
         self.calc_pole()
         self.show_pole()
         self.get_detector_signal()
@@ -397,3 +440,4 @@ class Constructions():
         self.ax_new.set_axis_off()
         self.calc_pf_ax.set_axis_off()
         self.lab_ax.set_axis_off()
+        self.lab_ax.set_aspect('equal')
