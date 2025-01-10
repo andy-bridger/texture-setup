@@ -85,7 +85,7 @@ class Sample:
 
 
 
-class SphereConstructions():
+class Constructions():
     def __init__(self, source, detectors, sample, ewald_radii, pole_radius, sample_view_axis, detector_colors = None):
         self.source = source
         self.detectors = detectors
@@ -174,14 +174,18 @@ class SphereConstructions():
 
         return X, Y, Z
 
-    def draw_cube(self, fig = None, ax = None, size = (0.1, 0.1, 0.1), offset = (0,0,0)):
-        X,Y,Z = self.cuboid_data(offset, size, self.sample.lab_frame_axes)
+    def draw_cube(self, fig = None, ax = None, size = (0.1, 0.1, 0.1),
+                  offset = (0,0,0), col= ('blue', 'green', 'red'), use_gonio = True):
+        if use_gonio == True:
+            X,Y,Z = self.cuboid_data(offset, size, self.sample.lab_frame_axes)
+        else:
+            X,Y,Z = self.cuboid_data(offset, size, np.eye(3,3))
         for i in range(2):  # Bottom/Top faces
-            ax.plot_surface(X[i, :, :], Y[i, :, :], Z[i, :, :], alpha=0.5, color='blue')
+            ax.plot_surface(X[i, :, :], Y[i, :, :], Z[i, :, :], alpha=0.5, color=col[0])
         for i in range(2):  # Front/Back faces
-            ax.plot_surface(X[:, i, :], Y[:, i, :], Z[:, i, :], alpha=0.5, color='green')
+            ax.plot_surface(X[:, i, :], Y[:, i, :], Z[:, i, :], alpha=0.5, color=col[1])
         for i in range(2):  # Left/Right faces
-            ax.plot_surface(X[:, :, i], Y[:, :, i], Z[:, :, i], alpha=0.5, color='red')
+            ax.plot_surface(X[:, :, i], Y[:, :, i], Z[:, :, i], alpha=0.5, color=col[2])
 
 
     def get_detector_Ks(self):
@@ -202,17 +206,20 @@ class SphereConstructions():
     def setup_view(self):
         self.fig = plt.figure()
         self.ax = self.fig.add_subplot(projection='3d')
-        gs0 = self.fig.add_gridspec(5, 10)
-        self.ax.set_subplotspec(gs0[:4, :8])
-        self.ax_new = self.fig.add_subplot(gs0[:2, 8:])
-        self.calc_pf_ax = self.fig.add_subplot(gs0[2:4, 8:])
+        gs0 = self.fig.add_gridspec(7, 10)
+        self.ax.set_subplotspec(gs0[:3, :8])
+        self.ax_new = self.fig.add_subplot(gs0[:3, 8:])
+        self.calc_pf_ax = self.fig.add_subplot(gs0[3:6, 8:])
+        self.lab_ax = self.fig.add_subplot(gs0[3:6, :8], projection='3d')
         self.ax_new.set_xlim([-self.pole_radius-0.1, self.pole_radius+0.1])
         self.ax_new.set_ylim([-self.pole_radius-0.1, self.pole_radius+0.1])
         self.ax_new.set_aspect('equal')
+        self.lab_ax.set_aspect('equal')
         self.calc_pf_ax.set_aspect('equal')
 
         self.ax.set_axis_off()
         self.ax_new.set_axis_off()
+        self.lab_ax.set_axis_off()
 
 
 
@@ -221,9 +228,8 @@ class SphereConstructions():
         Ks = self.get_detector_Ks()
         self.Ks = Ks
 
-    def show_sample(self, ratio = 0.1):
+    def show_sample(self, ax = None, ratio = 0.1):
         fig = self.fig
-        ax = self.ax
         self.draw_cube(fig, ax, offset = (0,0, 0), size = self.ewald_radius*np.ones(3)*ratio)
 
 
@@ -352,13 +358,33 @@ class SphereConstructions():
 
         chosen_ax.plot(eq[0], eq[1], c = 'grey')
 
+    def plot_lab_frame(self):
+        self.show_sample(ax=self.lab_ax, ratio = 1)
+        self.draw_cube(self.fig, self.lab_ax, offset = self.source.position,
+                       col = ['grey']*3, size=[2,1,1], use_gonio= False)
+        for idet, det in enumerate(self.detectors):
+            self.draw_cube(self.fig, self.lab_ax, offset=det.position,
+                           col=[self.detector_colors[idet]] * 3, size=[1, 1, 2], use_gonio=False)
+        self.lab_ax.set_aspect('equal')
+        quiver_kwargs = {}
+        for i, arg in enumerate(('X', 'Y', 'Z')):
+            quiver_kwargs[arg] = self.source.position[i]
+        for i, arg in enumerate(('U', 'V', 'W')):
+            quiver_kwargs[arg] = (self.sample.position - self.source.position)[i]
+        self.lab_ax.quiver(**quiver_kwargs)
+
+
+
+
     def plot_all(self):
         self.update()
         self.ax.clear()
         self.ax_new.clear()
+        self.lab_ax.clear()
         self.calc_ewald()
         self.show_ewald()
-        self.show_sample()
+        self.show_sample(ax = self.ax)
+        self.plot_lab_frame()
         self.calc_pole()
         self.show_pole()
         self.get_detector_signal()
@@ -370,3 +396,4 @@ class SphereConstructions():
         self.ax.set_axis_off()
         self.ax_new.set_axis_off()
         self.calc_pf_ax.set_axis_off()
+        self.lab_ax.set_axis_off()

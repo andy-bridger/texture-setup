@@ -15,7 +15,7 @@ sample = Sample([0,0,0], [0,0,0],
                 [(0,0,0),(45,0,0)], q_probe=1.41,
                 cell_colors=['pink', 'purple'])
 
-sphere_construction = SphereConstructions(source, [ndet,ndet2, sdet],
+sphere_construction = Constructions(source, [ndet,ndet2, sdet],
                                           sample, (1, 2),1,
                                           (1,0,0),
                                           detector_colors=('red','green', 'blue'))
