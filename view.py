@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
-from funcs import *
+from model import *
 
 from matplotlib.widgets import Slider, CheckButtons
 
