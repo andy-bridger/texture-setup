@@ -18,10 +18,14 @@ class Presenter():
                                                                  self.Model.sample.lab_space_rlatts,
                                                                  self.Model.sample.cell_colors,
                                                                  self.Model.sample.rl_alphas)
-    def plot_recip_sample(self, scale = 1):
-        self.recip_sample_artist = self.View.plot_cube(self.View.recip_ax, self.Model.get_sample(ratio = 0.1*scale), ('red', 'blue', 'green'))
-    def plot_lab_sample(self, scale = 1):
-        self.lab_sample_artist = self.View.plot_cube(self.View.lab_ax, self.Model.get_sample(ratio=scale), ('red', 'blue', 'green'))
+    def plot_recip_sample(self):
+        self.recip_sample_artist = self.View.plot_cube(self.View.recip_ax,
+                                                       self.Model.get_sample(ratio = 0.05*self.Model.r_dict['recip_sample']),
+                                                       ('red', 'blue', 'green'))
+    def plot_lab_sample(self):
+        self.lab_sample_artist = self.View.plot_cube(self.View.lab_ax,
+                                                     self.Model.get_sample(ratio=2*self.Model.r_dict['lab_sample']),
+                                                     ('red', 'blue', 'green'))
     def update_lab_sample(self):
         for x in self.lab_sample_artist:
             x.remove()
@@ -32,12 +36,12 @@ class Presenter():
                                                                   self.Model.get_detector_vectors())
         self.source_path_artists = self.View.plot_lab_source_path(self.View.lab_ax, self.Model.source.position,
                                                                   self.Model.ki_raw)
-    def plot_lab_Ks(self, scale = 1):
+    def plot_lab_Ks(self):
         self.lab_K_vec_artists = self.View.plot_lab_K_vecs(self.View.lab_ax,
                                                            self.Model.sample.position,
                                                            self.Model.Ks,
                                                            self.Model.detector_colors,
-                                                           scale = self.Model.ki_raw_scale*scale)
+                                                           scale = self.Model.ki_raw_scale*self.Model.r_dict['k_vecs']/4)
     def plot_lab_components(self):
         source_repr, source_col, det_reprs, det_cols = self.Model.get_lab_frame()
         self.source_artist = self.View.plot_cube(self.View.lab_ax, source_repr, source_col)
@@ -62,12 +66,37 @@ class Presenter():
                                                                                 self.Model.sample_view_axis,
                                                                                 self.Model.pole_figure_intensities,
                                                                                 self.Model.equator())
+    def plot_goniometer(self):
+        self.z_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_eq, self.Model.r_dict['gonio_r']),
+                         self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_eq[:,:self.Model.goniometer.phi_frac],
+                                             self.Model.r_dict['gonio_r'], 'red'),
+                         self.View.plot_goniometer_axis(self.View.lab_ax, 'Z',
+                                                        self.Model.sample.position,
+                                                        self.Model.goniometer.z_norm,
+                                                        self.Model.r_dict['gonio_v'])]
+        self.xp_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.x_prime_eq, self.Model.r_dict['gonio_r']),
+                          self.View.plot_line(self.View.lab_ax,
+                                              self.Model.goniometer.x_prime_eq[:, :self.Model.goniometer.theta_frac],
+                                              self.Model.r_dict['gonio_r'], 'blue'),
+                         self.View.plot_goniometer_axis(self.View.lab_ax, "X'",
+                                                        self.Model.sample.position,
+                                                        self.Model.goniometer.x_prime_norm,
+                                                        self.Model.r_dict['gonio_v'])]
+        self.zp_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_prime_eq, self.Model.r_dict['gonio_r']),
+                         self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_prime_eq[:, :self.Model.goniometer.psi_frac],
+                                self.Model.r_dict['gonio_r'], 'green'),
+                         self.View.plot_goniometer_axis(self.View.lab_ax, "Z'",
+                                                        self.Model.sample.position,
+                                                        self.Model.goniometer.z_prime_norm,
+                                                        self.Model.r_dict['gonio_v'])]
+
     def plot_all(self):
         # Lab Frame
         self.plot_lab_sample()
         self.plot_lab_beam_paths()
         self.plot_lab_Ks()
         self.plot_lab_components()
+        self.plot_goniometer()
 
         # Recip Frame
         self.plot_recip_sample()
@@ -89,13 +118,24 @@ class Presenter():
         self.View.add_goniometer_widgets(self.goniometer_update)
         self.View.add_lab_k_widgets(self.lab_k_update)
         self.View.add_sample_scale_widget(self.sample_scale_update)
+        self.View.add_gonio_ring_scale_widget(self.gr_scale_update)
+        self.View.add_gonio_axis_scale_widget(self.ga_scale_update)
 
     def goniometer_update(self, val):
         self.Model.sample.orient_array = [self.View.slider_phi.val, self.View.slider_theta.val, self.View.slider_psi.val]
         self.Model.sample.update()
         self.Model.update()
         self.View.update_view_axes()
+
+        # Lab Frame
         self.update_lab_sample()
+        self.remove_artist_set(self.z_artist)
+        self.remove_artist_set(self.xp_artist)
+        self.remove_artist_set(self.zp_artist)
+        self.Model.goniometer.update_norms(self.View.slider_phi.val, self.View.slider_theta.val)
+        self.Model.goniometer.update_equators()
+        self.Model.goniometer.update_fracs(self.View.slider_phi.val, self.View.slider_theta.val, self.View.slider_psi.val)
+        self.plot_goniometer()
 
         # Recip Frame
         self.plot_recip_sample()
@@ -113,16 +153,39 @@ class Presenter():
 
     def lab_k_update(self, val):
         self.remove_artist_set(self.lab_K_vec_artists)
-        self.plot_lab_Ks(scale = val)
+        self.Model.r_dict['k_vecs'] = val
+        self.plot_lab_Ks()
 
     def sample_scale_update(self, val):
         self.remove_artist_set(self.lab_sample_artist)
         self.remove_artist_set(self.recip_sample_artist)
-        self.plot_lab_sample(val)
-        self.plot_recip_sample(val)
+        self.Model.r_dict['recip_sample'] = val
+        self.Model.r_dict['lab_sample'] = val
+        self.plot_lab_sample()
+        self.plot_recip_sample()
+        self.View.fix_aspect()
+
+    def gr_scale_update(self, val):
+        self.remove_artist_set(self.z_artist)
+        self.remove_artist_set(self.xp_artist)
+        self.remove_artist_set(self.zp_artist)
+        self.Model.r_dict['gonio_r'] = val
+        self.plot_goniometer()
+        self.View.fix_aspect()
+
+    def ga_scale_update(self, val):
+        self.remove_artist_set(self.z_artist)
+        self.remove_artist_set(self.xp_artist)
+        self.remove_artist_set(self.zp_artist)
+        self.Model.r_dict['gonio_v'] = val
+        self.plot_goniometer()
+        self.View.fix_aspect()
 
     def remove_artist_set(self, artists):
         for a in artists:
-            a.remove()
+            if type(a) != list:
+                a.remove()
+            else:
+                self.remove_artist_set(a)
 
 

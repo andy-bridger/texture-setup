@@ -10,12 +10,11 @@ class View():
         pass
     def setup_view(self, pole_radius):
         self.fig = plt.figure()
-        self.recip_ax = self.fig.add_subplot(projection='3d')
         gs0 = self.fig.add_gridspec(7, 10)
-        self.recip_ax.set_subplotspec(gs0[:3, :8])
+        self.lab_ax = self.fig.add_subplot(gs0[0:3, :8], projection='3d')
+        self.recip_ax = self.fig.add_subplot(gs0[3:6, :8], projection='3d')
         self.pole_proj_ax = self.fig.add_subplot(gs0[:3, 8:])
         self.calc_pf_ax = self.fig.add_subplot(gs0[3:6, 8:])
-        self.lab_ax = self.fig.add_subplot(gs0[3:6, :8], projection='3d')
         self.pole_proj_ax.set_xlim([-pole_radius-0.1, pole_radius+0.1])
         self.pole_proj_ax.set_ylim([-pole_radius-0.1, pole_radius+0.1])
         self.recip_ax.set_axis_off()
@@ -51,10 +50,10 @@ class View():
         x,y,z = cart_array
         return ax.plot_surface(x, y, z, color='grey', alpha = 0.25)
 
-    def plot_line(self, ax = None, cart_array = None):
+    def plot_line(self, ax = None, cart_array = None, scale = 1, color = 'grey'):
         # Plot the surface
-        x,y,z = cart_array
-        return ax.plot(x, y, z, color='grey', alpha = 1)
+        x,y,z = cart_array*scale
+        return ax.plot(x, y, z, color=color, alpha = 1)
 
     def plot_cube(self, ax, cube_data, col):
         X, Y, Z = cube_data
@@ -123,10 +122,17 @@ class View():
                                color= detector_colors[i], arrow_length_ratio= 0.1, alpha= 0.25))
         return artists
 
+    def plot_goniometer_axis(self, ax, label, sample_position, vector, scale, color = 'grey'):
+        artists = []
+        artists.append(ax.quiver(X=sample_position[0], Y=sample_position[1], Z=sample_position[2],
+                               U = vector[0]*scale, V = vector[1]*scale, W = vector[2]*scale,
+                               color= color, arrow_length_ratio= 0.1, alpha= 0.25))
+        return artists
+
     def add_goniometer_widgets(self, update_plot):
-        ax_phi = plt.axes([0.2, 0.01, 0.3, 0.03], facecolor='lightgoldenrodyellow')  # Slider for φ
+        ax_phi = plt.axes([0.2, 0.09, 0.3, 0.03], facecolor='lightgoldenrodyellow')  # Slider for φ
         ax_theta = plt.axes([0.2, 0.05, 0.3, 0.03], facecolor='lightgoldenrodyellow')  # Slider for θ
-        ax_psi = plt.axes([0.2, 0.09, 0.3, 0.03], facecolor='lightgoldenrodyellow')  # Slider for ψ
+        ax_psi = plt.axes([0.2, 0.01, 0.3, 0.03], facecolor='lightgoldenrodyellow')  # Slider for ψ
 
         self.slider_phi = Slider(ax_phi, 'Phi (°)', 0, 360, valinit=0)
         self.slider_theta = Slider(ax_theta, 'Theta (°)', 0, 360, valinit=0)
@@ -138,10 +144,18 @@ class View():
         self.slider_psi.on_changed(update_plot)
 
     def add_lab_k_widgets(self, update_lab_k):
-        self.lab_k_vec_scale = plt.axes([0.95, 0.09, 0.025, 0.03])
-        self.lab_k_vec_slider = Slider(self.lab_k_vec_scale, 'K scale', 0.05, 1, valinit=0.25, valstep = 0.05)
+        pos = plt.axes([0.95, 0.09, 0.025, 0.03])
+        self.lab_k_vec_slider = Slider(pos, 'K scale', 0.05, 2, valinit=1.0, valstep = 0.05)
         self.lab_k_vec_slider.on_changed(update_lab_k)
     def add_sample_scale_widget(self, update_sample_scale):
-        self.sample_scale = plt.axes([0.95, 0.05, 0.025, 0.03])
-        self.sample_slider = Slider(self.sample_scale, 'Sample scale', 0.1, 3, valinit=2, valstep = 0.1)
+        pos = plt.axes([0.95, 0.05, 0.025, 0.03])
+        self.sample_slider = Slider(pos, 'Sample scale', 0.1, 3, valinit=1.0, valstep = 0.1)
         self.sample_slider.on_changed(update_sample_scale)
+    def add_gonio_ring_scale_widget(self, update_gr_scale):
+        pos = plt.axes([0.95, 0.01, 0.025, 0.03])
+        self.ring_slider = Slider(pos, 'Ring scale', 0.1, 3, valinit=1.0, valstep = 0.1)
+        self.ring_slider.on_changed(update_gr_scale)
+    def add_gonio_axis_scale_widget(self, update_ga_scale):
+        pos = plt.axes([0.85, 0.01, 0.025, 0.03])
+        self.ga_slider = Slider(pos, 'GA scale', 0.1, 5, valinit=3.0, valstep = 0.1)
+        self.ga_slider.on_changed(update_ga_scale)

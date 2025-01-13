@@ -17,9 +17,12 @@ sample = Sample([0,0,0], [0,0,0],
                 [(0,0,0),(45,0,0)], q_probe=1.41,
                 cell_colors=['pink', 'purple'])
 
+goniometer = Goniometer()
+
 model = Model(source,
               [ndet,ndet2, sdet],
               sample,
+              goniometer,
               (1, 2),
               1,
               (1,0,0),

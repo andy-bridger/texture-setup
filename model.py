@@ -86,15 +86,60 @@ class Sample:
         self.lab_space_rlatts = np.asarray([self.rot.apply(rl.T).T for rl in self.sample_space_rlatts])
 
 
+class Goniometer:
+    def __init__(self, scale = 1):
+        self.z_norm_init = np.array((0,0,1))
+        self.x_prime_norm_init = np.array((1,0,0))
+        self.z_prime_norm_init = np.array((0,0,1))
+        self.z_norm = np.array((0,0,1))
+        self.x_prime_norm = np.array((1,0,0))
+        self.z_prime_norm = np.array((0,0,1))
+        self.scale = scale
+        self.update_equators()
+        self.phi_frac = 0
+        self.theta_frac = 0
+        self.psi_frac = 0
+
+    def equator(self, r = 1.0, res = 100, offset=(0,0,0)):
+        r = self.scale * r
+        u = np.linspace(0, 2 * np.pi, res)
+        x = r*np.cos(u) + offset[0]
+        y = r*np.sin(u) + offset[1]
+        z = np.zeros_like(x) + offset[2]
+        return np.concatenate((x[None,:],y[None,:],z[None,:]), axis = 0)
+
+    def orient_to_pole(self, eq, view_axis):
+        bisect = view_axis + ((np.array((0,0,1)) - view_axis)/2)
+        bisect = (bisect/np.linalg.norm(bisect))*-np.pi
+        rot = Rotation.from_rotvec(bisect)
+        return rot.apply(eq.T).T
+
+    def update_norms(self, phi, theta):
+        rot1 = Rotation.from_euler('Z', phi, degrees=True)
+        rot2 = Rotation.from_euler('ZX', [phi, theta], degrees=True)
+        self.x_prime_norm = rot1.apply(self.x_prime_norm_init)
+        self.z_prime_norm = rot2.apply(self.z_prime_norm_init)
+
+    def update_equators(self):
+        self.z_eq = self.orient_to_pole(self.equator(r = 3), self.z_norm)
+        self.x_prime_eq = self.orient_to_pole(self.equator(r = 2.95), self.x_prime_norm)
+        self.z_prime_eq = self.orient_to_pole(self.equator(r = 2.9), self.z_prime_norm)
+
+    def update_fracs(self, phi, theta, psi):
+        self.phi_frac = int((phi/360)*self.z_eq.shape[1])
+        self.theta_frac = int((theta/360)*self.x_prime_eq.shape[1])
+        self.psi_frac = int((psi/360)*self.z_prime_eq.shape[1])
+
 
 
 
 class Model():
-    def __init__(self, source, detectors, sample, ewald_radii, pole_radius,
+    def __init__(self, source, detectors, sample, goniometer, ewald_radii, pole_radius,
                  sample_view_axis, detector_colors = None):
         self.source = source
         self.detectors = detectors
         self.sample = sample
+        self.goniometer = goniometer
         self.ewald_radii = ewald_radii
         self.ewald_radius = ewald_radii[0]
         self.pole_radius = pole_radius
@@ -113,6 +158,12 @@ class Model():
         self.show_lab_K_vecs = True
         self.lab_K_vecs = []
         self.setup_inplane_pole_figure()
+
+        self.r_dict = {'recip_sample': 1,
+                                   'lab_sample': 1,
+                                   'k_vecs': 1,
+                                   'gonio_r': 1,
+                                   'gonio_v': 1}
 
         self.update()
 
