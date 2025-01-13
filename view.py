@@ -123,41 +123,25 @@ class View():
                                color= detector_colors[i], arrow_length_ratio= 0.1, alpha= 0.25))
         return artists
 
-'''
-def slider_garbage():
-    # Function to update the visualization when sliders change
-    def update_plot(val):
-        # Update the sample's orientation
-        sample.orient_array = [slider_phi.val, slider_theta.val, slider_psi.val]
-        sample.update()
-        sphere_construction.update()
-        sphere_construction.plot_all()
-    
-    def update_plot_ks(event):
-        sphere_construction.toggle_lab_K_vecs()
-    
-    
-    # Setup the main figure and axes for visualization
-    sphere_construction.plot_all()
-    
-    # Create sliders below the visualization
-    fig = sphere_construction.fig
-    ax_phi = plt.axes([0.2, 0.01, 0.65, 0.03], facecolor='lightgoldenrodyellow')  # Slider for φ
-    ax_theta = plt.axes([0.2, 0.05, 0.65, 0.03], facecolor='lightgoldenrodyellow')  # Slider for θ
-    ax_psi = plt.axes([0.2, 0.09, 0.65, 0.03], facecolor='lightgoldenrodyellow')  # Slider for ψ
-    
-    slider_phi = Slider(ax_phi, 'Phi (°)', 0, 360, valinit=0)
-    slider_theta = Slider(ax_theta, 'Theta (°)', 0, 360, valinit=0)
-    slider_psi = Slider(ax_psi, 'Psi (°)', 0, 360, valinit=0)
-    
-    lab_k_vec_button_pos = fig.add_axes([0.95, 0.09, 0.025, 0.03])
-    lab_k_vec_button = Slider(lab_k_vec_button_pos, 'Ks', 0, 1, valinit=0, valstep = 1)
-    lab_k_vec_button.on_changed(update_plot_ks)
-    
-    # Connect sliders to the update function
-    slider_phi.on_changed(update_plot)
-    slider_theta.on_changed(update_plot)
-    slider_psi.on_changed(update_plot)
-    
-    plt.show()
-'''
+    def add_goniometer_widgets(self, update_plot):
+        ax_phi = plt.axes([0.2, 0.01, 0.3, 0.03], facecolor='lightgoldenrodyellow')  # Slider for φ
+        ax_theta = plt.axes([0.2, 0.05, 0.3, 0.03], facecolor='lightgoldenrodyellow')  # Slider for θ
+        ax_psi = plt.axes([0.2, 0.09, 0.3, 0.03], facecolor='lightgoldenrodyellow')  # Slider for ψ
+
+        self.slider_phi = Slider(ax_phi, 'Phi (°)', 0, 360, valinit=0)
+        self.slider_theta = Slider(ax_theta, 'Theta (°)', 0, 360, valinit=0)
+        self.slider_psi = Slider(ax_psi, 'Psi (°)', 0, 360, valinit=0)
+
+        # Connect sliders to the update function
+        self.slider_phi.on_changed(update_plot)
+        self.slider_theta.on_changed(update_plot)
+        self.slider_psi.on_changed(update_plot)
+
+    def add_lab_k_widgets(self, update_lab_k):
+        self.lab_k_vec_scale = plt.axes([0.95, 0.09, 0.025, 0.03])
+        self.lab_k_vec_slider = Slider(self.lab_k_vec_scale, 'K scale', 0.05, 1, valinit=0.25, valstep = 0.05)
+        self.lab_k_vec_slider.on_changed(update_lab_k)
+    def add_sample_scale_widget(self, update_sample_scale):
+        self.sample_scale = plt.axes([0.95, 0.05, 0.025, 0.03])
+        self.sample_slider = Slider(self.sample_scale, 'Sample scale', 0.1, 3, valinit=2, valstep = 0.1)
+        self.sample_slider.on_changed(update_sample_scale)

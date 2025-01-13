@@ -18,21 +18,26 @@ class Presenter():
                                                                  self.Model.sample.lab_space_rlatts,
                                                                  self.Model.sample.cell_colors,
                                                                  self.Model.sample.rl_alphas)
-    def plot_recip_sample(self):
-        self.recip_sample_artist = self.View.plot_cube(self.View.recip_ax, self.Model.get_sample(), ('red', 'blue', 'green'))
-    def plot_lab_sample(self):
-        self.lab_sample_artist = self.View.plot_cube(self.View.lab_ax, self.Model.get_sample(ratio=1), ('red', 'blue', 'green'))
+    def plot_recip_sample(self, scale = 1):
+        self.recip_sample_artist = self.View.plot_cube(self.View.recip_ax, self.Model.get_sample(ratio = 0.1*scale), ('red', 'blue', 'green'))
+    def plot_lab_sample(self, scale = 1):
+        self.lab_sample_artist = self.View.plot_cube(self.View.lab_ax, self.Model.get_sample(ratio=scale), ('red', 'blue', 'green'))
+    def update_lab_sample(self):
+        for x in self.lab_sample_artist:
+            x.remove()
+        self.plot_lab_sample()
+
     def plot_lab_beam_paths(self):
         self.det_path_artists = self.View.plot_lab_detector_paths(self.View.lab_ax, self.Model.sample.position,
                                                                   self.Model.get_detector_vectors())
         self.source_path_artists = self.View.plot_lab_source_path(self.View.lab_ax, self.Model.source.position,
                                                                   self.Model.ki_raw)
-    def plot_lab_Ks(self):
+    def plot_lab_Ks(self, scale = 1):
         self.lab_K_vec_artists = self.View.plot_lab_K_vecs(self.View.lab_ax,
                                                            self.Model.sample.position,
                                                            self.Model.Ks,
                                                            self.Model.detector_colors,
-                                                           scale = self.Model.ki_raw_scale)
+                                                           scale = self.Model.ki_raw_scale*scale)
     def plot_lab_components(self):
         source_repr, source_col, det_reprs, det_cols = self.Model.get_lab_frame()
         self.source_artist = self.View.plot_cube(self.View.lab_ax, source_repr, source_col)
@@ -77,6 +82,47 @@ class Presenter():
         self.plot_pole_figure_intensities()
 
         self.View.fix_aspect()
+
     def init_view(self):
         self.View.setup_view(self.Model.pole_radius)
         self.View.update_view_axes()
+        self.View.add_goniometer_widgets(self.goniometer_update)
+        self.View.add_lab_k_widgets(self.lab_k_update)
+        self.View.add_sample_scale_widget(self.sample_scale_update)
+
+    def goniometer_update(self, val):
+        self.Model.sample.orient_array = [self.View.slider_phi.val, self.View.slider_theta.val, self.View.slider_psi.val]
+        self.Model.sample.update()
+        self.Model.update()
+        self.View.update_view_axes()
+        self.update_lab_sample()
+
+        # Recip Frame
+        self.plot_recip_sample()
+        self.plot_recip_lattices()
+        self.plot_ewald()
+        self.plot_pole_sphere()
+
+        # Pole Detector Frame
+        self.plot_pole_figure_detectors()
+
+        # Pole Figure Frame
+        self.plot_pole_figure_intensities()
+
+        self.View.fix_aspect()
+
+    def lab_k_update(self, val):
+        self.remove_artist_set(self.lab_K_vec_artists)
+        self.plot_lab_Ks(scale = val)
+
+    def sample_scale_update(self, val):
+        self.remove_artist_set(self.lab_sample_artist)
+        self.remove_artist_set(self.recip_sample_artist)
+        self.plot_lab_sample(val)
+        self.plot_recip_sample(val)
+
+    def remove_artist_set(self, artists):
+        for a in artists:
+            a.remove()
+
+
