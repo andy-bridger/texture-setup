@@ -44,6 +44,7 @@ class Sample:
         else:
             self.cell_colors = cell_colors
         self.update()
+
     def __repr__(self):
         return self.name
     def get_view_in_lab_frame(self, view_axis):
@@ -109,8 +110,9 @@ class Constructions():
         self.plot_lab_frame()
         self.recip_sample = self.show_sample(ax = self.ax)
         self.lab_sample = self.show_sample(ax=self.lab_ax, ratio=self.sample.sample_scale)
-        self.show_lab_K_vecs = False
+        self.show_lab_K_vecs = True
         self.lab_K_vecs = []
+        self.lab_k_vecs = self.plot_lab_K_vecs()
 
     def update(self):
         self.pole_view_axis = self.sample.get_view_in_lab_frame(self.sample_view_axis)
@@ -427,7 +429,6 @@ class Constructions():
         self.show_ewald()
         self.recip_sample = self.show_sample(ax = self.ax)
         self.lab_sample = self.show_sample(ax=self.lab_ax, ratio=self.sample.sample_scale)
-        self.lab_k_vecs = self.plot_lab_K_vecs()
         self.calc_pole()
         self.show_pole()
         self.get_detector_signal()

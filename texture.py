@@ -27,7 +27,6 @@ def update_plot(val):
     sample.update()
     sphere_construction.update()
     sphere_construction.plot_all()
-    sphere_construction.toggle_lab_K_vecs()
 
 def update_plot_ks(event):
     sphere_construction.toggle_lab_K_vecs()
