@@ -47,7 +47,7 @@ class View():
         return artists
 
     def show_detector_probe(self, ax, probe_val):
-        return ax.axvline(probe_val)
+        return ax.axvline(probe_val, c = 'gold')
 
     def show_reciprocal_lattices(self, ax, lab_space_rlatts, cell_colors, rl_alphas):
         artists = []
@@ -55,10 +55,10 @@ class View():
             artists.append(ax.scatter(xs=rl[0], ys= rl[1], zs= rl[2], c=cell_colors[i], s = rl_alphas))
         return artists
 
-    def plot_sphere(self, ax = None, cart_array = None):
+    def plot_sphere(self, ax = None, cart_array = None, c = 'grey'):
         # Plot the surface
         x,y,z = cart_array
-        return ax.plot_surface(x, y, z, color='grey', alpha = 0.25)
+        return ax.plot_surface(x, y, z, color=c, alpha = 0.25)
 
     def plot_line(self, ax = None, cart_array = None, scale = 1, color = 'grey'):
         # Plot the surface
@@ -172,5 +172,5 @@ class View():
 
     def add_probe_pos_widget(self, update_probe_p_scale, min, max, init):
         pos = plt.axes([0.85, 0.05, 0.025, 0.03])
-        self.probe_p_slider = Slider(pos, 'probe Q', min, max, valinit=init, valstep = 0.1)
+        self.probe_p_slider = Slider(pos, 'probe Q', min, max, valinit=init, valstep = 0.02)
         self.probe_p_slider.on_changed(update_probe_p_scale)

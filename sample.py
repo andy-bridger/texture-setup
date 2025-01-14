@@ -62,7 +62,8 @@ class Sample:
         q_mask = self.rl_qs < self.q_range
         self.rl_qs = self.rl_qs[q_mask]
         self.reciprocal_lattice = self.reciprocal_lattice[:,q_mask]
-        self.rl_alphas = np.where(np.abs(self.rl_qs - 1.0) < 0.1, 5, 0.25)
+    def adjust_alphas(self, q_probe):
+        self.rl_alphas = np.where(np.abs(self.rl_qs - q_probe) < 0.1, 5, 0.25)
     def get_q_shell(self, q_probe, thresh = 0.1):
         self.q_of_interest =  np.where(np.abs(self.rl_qs - q_probe)<thresh, True, False)
         return self.q_of_interest

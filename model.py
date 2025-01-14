@@ -217,7 +217,7 @@ class Model():
         self.pole_figure_points = self.sample.rot.apply(self.pole_K_projs, inverse=True)
         pfi = []
         for di, det in enumerate(self.detectors):#just read the probe channel for now
-            dr = det.readout[self.probe_ind]
+            dr = det.get_readout(self.probe_ind)
             npfi = np.concatenate((self.pole_figure_points[di], np.array((dr,))))
             pfi.append(npfi)
         pfi = np.asarray(pfi)
@@ -228,7 +228,7 @@ class Model():
         self.pole_figure_points = self.sample.rot.apply(self.pole_K_projs, inverse=True)
         current_is = self.pole_figure_intensities[:,3]
         for di, det in enumerate(self.detectors):#just read the probe channel for now
-            dr = det.readout[self.probe_ind]
+            dr = det.get_readout(self.probe_ind)
             pos = current_is.searchsorted(dr)
             npfi = np.concatenate((self.pole_figure_points[di], np.array((dr,))))
             self.pole_figure_intensities = np.concatenate((self.pole_figure_intensities[:pos,:], npfi[None,:], self.pole_figure_intensities[pos:,:]))

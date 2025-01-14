@@ -11,12 +11,17 @@ class Presenter():
         self.View.setup_view(self.Model.pole_radius)
     def toggle_visible(self, artist):
         artist.set_visible(not artist._visible)
+    def plot_probe_ewald(self):
+        probe_sphere_data = self.Model.calc_ewald(self.Model.r_dict['q_probe'])
+        self.p_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, probe_sphere_data, c='gold')
     def plot_ewald(self):
         inner_sphere_data = self.Model.calc_ewald(self.Model.ewald_radii[0])
         outer_sphere_data = self.Model.calc_ewald(self.Model.ewald_radii[1])
         self.i_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, inner_sphere_data)
         self.o_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, outer_sphere_data)
+        self.plot_probe_ewald()
     def plot_recip_lattices(self):
+        self.Model.sample.adjust_alphas(self.Model.r_dict['q_probe'])
         self.r_latt_artists = self.View.show_reciprocal_lattices(self.View.recip_ax,
                                                                  self.Model.sample.lab_space_rlatts,
                                                                  self.Model.sample.cell_colors,
@@ -208,12 +213,16 @@ class Presenter():
     def update_probe_pos(self, val):
         self.det_probe_artist.remove()
         self.remove_artist_set(self.pole_figure_artists)
+        self.remove_artist_set(self.r_latt_artists)
+        self.p_ewald_sphere_artist.remove()
         self.pole_figure_artists = []
         self.Model.r_dict['q_probe'] = val
         self.Model.get_probe_ind()
         self.Model.setup_inplane_pole_figure()
         self.plot_pole_figure_intensities()
         self.plot_q_probe()
+        self.plot_probe_ewald()
+        self.plot_recip_lattices()
 
     def remove_artist_set(self, artists):
         for a in artists:
