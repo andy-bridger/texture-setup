@@ -22,7 +22,6 @@ class Sample:
                                   for co in cell_orientations]
         self.get_reciprocal_lattice_vectors()
         self.generate_reciprocal_lattice_to_q()
-        self.get_q_shell(self.q_probe)
         self.orient_reciprocal_lattices_to_sample()
         if cell_colors == None:
             self.cell_colors = ['black']*len(cell_orientations)

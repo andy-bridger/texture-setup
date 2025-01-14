@@ -6,6 +6,7 @@ class Presenter():
         self.Model = Model
         self.View = View
         self.init_view()
+        self.pole_figure_artists =[]
     def setup_view(self):
         self.View.setup_view(self.Model.pole_radius)
     def toggle_visible(self, artist):
@@ -64,7 +65,7 @@ class Presenter():
                                                                                 self.Model.detector_colors,
                                                                                 self.Model.equator())
     def plot_pole_figure_intensities(self):
-        self.pole_figure_artists = self.View.plot_pole_figure_intensities(self.View.calc_pf_ax,
+        self.pole_figure_artists += self.View.plot_pole_figure_intensities(self.View.calc_pf_ax,
                                                                                 self.Model.sample_view_axis,
                                                                                 self.Model.pole_figure_intensities,
                                                                                 self.Model.equator())
@@ -98,6 +99,9 @@ class Presenter():
                                                                        self.Model.q_range,
                                                                        self.Model.detector_colors)
 
+    def plot_q_probe(self):
+        self.det_probe_artist = self.View.show_detector_probe(self.View.det_ax, self.Model.r_dict['q_probe'])
+
     def plot_all(self):
         # Lab Frame
         self.plot_lab_sample()
@@ -115,6 +119,7 @@ class Presenter():
 
         # Pole Detector Frame
         self.plot_pole_figure_detectors()
+        self.plot_q_probe()
 
         # Pole Figure Frame
         self.plot_pole_figure_intensities()
@@ -129,6 +134,10 @@ class Presenter():
         self.View.add_sample_scale_widget(self.sample_scale_update)
         self.View.add_gonio_ring_scale_widget(self.gr_scale_update)
         self.View.add_gonio_axis_scale_widget(self.ga_scale_update)
+        self.View.add_probe_pos_widget(self.update_probe_pos,
+                                       self.Model.ewald_radii[0],
+                                       self.Model.ewald_radii[1],
+                                       self.Model.r_dict['q_probe'])
 
     def goniometer_update(self, val):
         self.Model.sample.orient_array = [self.View.slider_phi.val, self.View.slider_theta.val, self.View.slider_psi.val]
@@ -158,6 +167,7 @@ class Presenter():
         # Detector Readout
         self.View.det_ax.clear()
         self.plot_readouts()
+        self.plot_q_probe()
 
         # Pole Figure Frame
         self.plot_pole_figure_intensities()
@@ -194,6 +204,16 @@ class Presenter():
         self.Model.r_dict['gonio_v'] = val
         self.plot_goniometer()
         self.View.fix_aspect()
+
+    def update_probe_pos(self, val):
+        self.det_probe_artist.remove()
+        self.remove_artist_set(self.pole_figure_artists)
+        self.pole_figure_artists = []
+        self.Model.r_dict['q_probe'] = val
+        self.Model.get_probe_ind()
+        self.Model.setup_inplane_pole_figure()
+        self.plot_pole_figure_intensities()
+        self.plot_q_probe()
 
     def remove_artist_set(self, artists):
         for a in artists:

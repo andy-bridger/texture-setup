@@ -43,8 +43,11 @@ class View():
     def show_detector_readout(self, ax, readouts, q_vals, cols):
         artists = []
         for i, r in enumerate(readouts):
-            artists.append(ax.plot(q_vals, r+i*1.5, c = cols[i], marker = 'x'))
+            artists.append(ax.plot(q_vals, r+i*1.5, c = cols[i]))
         return artists
+
+    def show_detector_probe(self, ax, probe_val):
+        return ax.axvline(probe_val)
 
     def show_reciprocal_lattices(self, ax, lab_space_rlatts, cell_colors, rl_alphas):
         artists = []
@@ -166,3 +169,8 @@ class View():
         pos = plt.axes([0.85, 0.01, 0.025, 0.03])
         self.ga_slider = Slider(pos, 'GA scale', 0.1, 5, valinit=3.0, valstep = 0.1)
         self.ga_slider.on_changed(update_ga_scale)
+
+    def add_probe_pos_widget(self, update_probe_p_scale, min, max, init):
+        pos = plt.axes([0.85, 0.05, 0.025, 0.03])
+        self.probe_p_slider = Slider(pos, 'probe Q', min, max, valinit=init, valstep = 0.1)
+        self.probe_p_slider.on_changed(update_probe_p_scale)
