@@ -13,8 +13,9 @@ class View():
         gs0 = self.fig.add_gridspec(7, 10)
         self.lab_ax = self.fig.add_subplot(gs0[0:3, :8], projection='3d')
         self.recip_ax = self.fig.add_subplot(gs0[3:6, :8], projection='3d')
-        self.pole_proj_ax = self.fig.add_subplot(gs0[:3, 8:])
-        self.calc_pf_ax = self.fig.add_subplot(gs0[3:6, 8:])
+        self.pole_proj_ax = self.fig.add_subplot(gs0[:2, 8:])
+        self.det_ax = self.fig.add_subplot(gs0[2:4, 8:])
+        self.calc_pf_ax = self.fig.add_subplot(gs0[4:6, 8:])
         self.pole_proj_ax.set_xlim([-pole_radius-0.1, pole_radius+0.1])
         self.pole_proj_ax.set_ylim([-pole_radius-0.1, pole_radius+0.1])
         self.recip_ax.set_axis_off()
@@ -37,6 +38,12 @@ class View():
         artists = []
         for i, K in enumerate(Ks):
             artists.append(ax.quiver(0,0,0, K[0], K[1], K[2], arrow_length_ratio = 0.05, color = detector_colors[i]))
+        return artists
+
+    def show_detector_readout(self, ax, readouts, q_vals, cols):
+        artists = []
+        for i, r in enumerate(readouts):
+            artists.append(ax.plot(q_vals, r+i*1.5, c = cols[i], marker = 'x'))
         return artists
 
     def show_reciprocal_lattices(self, ax, lab_space_rlatts, cell_colors, rl_alphas):

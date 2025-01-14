@@ -11,8 +11,10 @@ class Presenter():
     def toggle_visible(self, artist):
         artist.set_visible(not artist._visible)
     def plot_ewald(self):
-        sphere_data = self.Model.calc_ewald(self.Model.ewald_radius)
-        self.ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, sphere_data)
+        inner_sphere_data = self.Model.calc_ewald(self.Model.ewald_radii[0])
+        outer_sphere_data = self.Model.calc_ewald(self.Model.ewald_radii[1])
+        self.i_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, inner_sphere_data)
+        self.o_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, outer_sphere_data)
     def plot_recip_lattices(self):
         self.r_latt_artists = self.View.show_reciprocal_lattices(self.View.recip_ax,
                                                                  self.Model.sample.lab_space_rlatts,
@@ -90,6 +92,12 @@ class Presenter():
                                                         self.Model.goniometer.z_prime_norm,
                                                         self.Model.r_dict['gonio_v'])]
 
+    def plot_readouts(self):
+        self.det_readout_plot_artist = self.View.show_detector_readout(self.View.det_ax,
+                                                                       self.Model.detector_readout,
+                                                                       self.Model.q_range,
+                                                                       self.Model.detector_colors)
+
     def plot_all(self):
         # Lab Frame
         self.plot_lab_sample()
@@ -97,6 +105,7 @@ class Presenter():
         self.plot_lab_Ks()
         self.plot_lab_components()
         self.plot_goniometer()
+        self.plot_readouts()
 
         # Recip Frame
         self.plot_recip_sample()
@@ -146,8 +155,13 @@ class Presenter():
         # Pole Detector Frame
         self.plot_pole_figure_detectors()
 
+        # Detector Readout
+        self.View.det_ax.clear()
+        self.plot_readouts()
+
         # Pole Figure Frame
         self.plot_pole_figure_intensities()
+
 
         self.View.fix_aspect()
 

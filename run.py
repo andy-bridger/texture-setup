@@ -27,10 +27,10 @@ model = Model(source,
               [ndet,ndet2, sdet],
               sample,
               goniometer,
-              (1, 2),
+              (0.7, 1.4),
               1,
               (1,0,0),
-              detector_colors=('red','green', 'blue'))
+              detector_colors=('red','green', 'blue'), ewald_steps=100)
 
 view = View()
 

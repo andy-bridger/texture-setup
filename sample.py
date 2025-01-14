@@ -22,6 +22,7 @@ class Sample:
                                   for co in cell_orientations]
         self.get_reciprocal_lattice_vectors()
         self.generate_reciprocal_lattice_to_q()
+        self.get_q_shell(self.q_probe)
         self.orient_reciprocal_lattices_to_sample()
         if cell_colors == None:
             self.cell_colors = ['black']*len(cell_orientations)
@@ -62,8 +63,10 @@ class Sample:
         q_mask = self.rl_qs < self.q_range
         self.rl_qs = self.rl_qs[q_mask]
         self.reciprocal_lattice = self.reciprocal_lattice[:,q_mask]
-        self.rl_alphas = np.where(np.abs(self.rl_qs - self.q_probe) < 0.1, 5, 0.25)
-        self.q_of_interest =  np.where(np.abs(self.rl_qs - self.q_probe)<0.1, True, False)
+        self.rl_alphas = np.where(np.abs(self.rl_qs - 1.0) < 0.1, 5, 0.25)
+    def get_q_shell(self, q_probe, thresh = 0.1):
+        self.q_of_interest =  np.where(np.abs(self.rl_qs - q_probe)<thresh, True, False)
+        return self.q_of_interest
     def orient_reciprocal_lattices_to_sample(self):
         self.sample_space_rlatts = [co.apply(self.reciprocal_lattice.T).T for co in self.cell_orientations]
     def orient_reciprocal_lattices_to_lab(self):

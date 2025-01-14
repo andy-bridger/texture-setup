@@ -11,13 +11,14 @@ from helper_funcs import *
 
 class Model():
     def __init__(self, source, detectors, sample, goniometer, ewald_radii, pole_radius,
-                 sample_view_axis, detector_colors = None):
+                 sample_view_axis, detector_colors = None, ewald_steps = 2):
         self.source = source
         self.detectors = detectors
         self.sample = sample
         self.goniometer = goniometer
         self.ewald_radii = ewald_radii
         self.ewald_radius = ewald_radii[0]
+        self.q_range = np.linspace(ewald_radii[0], ewald_radii[1], ewald_steps)
         self.pole_radius = pole_radius
         self.sample_view_axis = np.asarray(sample_view_axis)
         self.no_pfi = True
@@ -28,7 +29,12 @@ class Model():
         self.ki_raw = self.sample.position - self.source.position
         self.ki_raw_scale = np.linalg.norm(self.ki_raw)
         self.ki = self.ki_raw/self.ki_raw_scale
-        self.Ks = self.get_detector_Ks()
+        for det in self.detectors:
+            det.ki = self.ki
+            det.radii = ewald_radii
+            det.r_steps = ewald_steps
+        self.get_detector_Ks()
+        self.setup_qrange_rl()
         self.setup_pole()
 
         self.show_lab_K_vecs = True
@@ -105,25 +111,46 @@ class Model():
     def get_Ks(self):
         norm = lambda x : x/np.linalg.norm(x)
         ki = norm(self.sample.position - self.source.position)
-        Ks = [norm(norm(det.position - self.sample.position) - ki) for det in self.detectors]
+        Ks = []
+        for det in self.detectors:
+            K = norm(norm(det.position - self.sample.position) - ki)
+            Ks.append(K)
+            det.K = K
         return Ks
 
     def get_detector_Ks(self):
-        Ks = self.get_Ks()
-        Gs = []
-        for iK, K in enumerate(Ks):
-            roots = sphere_line_intercept(np.zeros(3), K, -self.ki*self.ewald_radius, self.ewald_radius)
-            Gs.append(roots[roots!=0]*K)
-            self.detectors[iK].K = roots[roots!=0]*K
-        return np.asarray(Gs)
+        self.Ks = self.get_Ks()
+        pKs = []
+        for det in self.detectors:
+            det_pKs = det.get_polychromatic_ks(self.q_range, self.ki)
+
+            pKs.append(det_pKs)
+        self.pKs = np.asarray(pKs)
+
+    def setup_qrange_rl(self):
+        self.qs_of_interest = []
+        for iq, q_probe in enumerate(self.q_range):
+            qs_of_interest = []
+            for det in self.detectors:
+                qs_of_interest.append(self.sample.get_q_shell(np.linalg.norm(det.pKs[iq])))
+            self.qs_of_interest.append(np.asarray(qs_of_interest).sum(axis = 0)>0)
+
 
     def get_detector_signal(self, thresh = 0.1):
-        q_of_interest = self.sample.q_of_interest
-        disp_vecs = self.sample.lab_space_rlatts[None, :,:,q_of_interest] - self.Ks[:,None,:,None]
-        dists = np.linalg.norm(disp_vecs, axis = 2)
-        relevant_dists = np.where(dists < thresh, np.exp(-dists), 0)
-        self.detector_readout = relevant_dists.sum(axis = (1,2))
+        q_space_readouts = []
+        for iq, q_probe in enumerate(self.q_range):
 
+            q_of_interest = self.qs_of_interest[iq]
+            # detector, grain, coord, reflection  det qrange coord
+            pKs = self.pKs[:,iq, :]
+            disp_vecs = self.sample.lab_space_rlatts[None, :,:,q_of_interest] - pKs[:,None,:,None]
+            dists = np.linalg.norm(disp_vecs, axis = 2)
+            relevant_dists = np.where(dists < thresh, np.exp(-dists), 0)
+            q_space_readouts.append(relevant_dists.sum(axis = (1,2)))
+        q_space_readouts = np.asarray(q_space_readouts)
+
+        # placeholder to keep other functions working
+        self.detector_readout = q_space_readouts.T
 
 
     def setup_pole(self):
@@ -182,7 +209,7 @@ class Model():
         self.get_detector_signal()
         self.pole_figure_points = self.sample.rot.apply(self.pole_K_projs, inverse=True)
         pfi = []
-        for di, dr in enumerate(self.detector_readout):
+        for di, dr in enumerate(self.detector_readout[:,0]):#just read the first det channel for now
             npfi = np.concatenate((self.pole_figure_points[di], np.array((dr,))))
             pfi.append(npfi)
         pfi = np.asarray(pfi)
@@ -192,7 +219,7 @@ class Model():
     def get_inplane_pole_figure(self):
         self.pole_figure_points = self.sample.rot.apply(self.pole_K_projs, inverse=True)
         current_is = self.pole_figure_intensities[:,3]
-        for di, dr in enumerate(self.detector_readout):
+        for di, dr in enumerate(self.detector_readout[:,0]):#just read the first det channel for now
             pos = current_is.searchsorted(dr)
             npfi = np.concatenate((self.pole_figure_points[di], np.array((dr,))))
             self.pole_figure_intensities = np.concatenate((self.pole_figure_intensities[:pos,:], npfi[None,:], self.pole_figure_intensities[pos:,:]))
