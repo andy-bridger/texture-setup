@@ -2,134 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 
-class Detector:
-    def __init__(self, position, name):
-        self.name = f'detector {name}'
-        self.position = np.asarray(position)
-        self.lab_frame_axes = np.array(((1,0,0),(0,1,0),(0,0,1)))
-    def __repr__(self):
-        return self.name
-
-class Source:
-    def __init__(self, position):
-        self.name = 'source'
-        self.position = np.asarray(position)
-    def __repr__(self):
-        return self.name
-
-class Sample:
-    def __init__(self, position, orientation, cell_parameters, q_range,
-                 cell_orientations, cell_colors=None, q_probe = 1,
-                 sample_scale = 1):
-        '''
-        position: lab frame x,y,z coordiantes
-        orientation: sample
-        '''
-        self.name = 'sample'
-        self.position = np.asarray(position)
-        self.orient_array = orientation
-        self.cell_parameters = cell_parameters
-        self.sample_scale = sample_scale
-        self.a, self.b, self.c = cell_parameters
-        self.v = self.a*self.b*self.c
-        self.q_range = q_range
-        self.q_probe = q_probe
-        self.cell_orientations = [Rotation.from_euler('ZXZ', co, degrees = True)
-                                  for co in cell_orientations]
-        self.get_reciprocal_lattice_vectors()
-        self.generate_reciprocal_lattice_to_q()
-        self.orient_reciprocal_lattices_to_sample()
-        if cell_colors == None:
-            self.cell_colors = ['black']*len(cell_orientations)
-        else:
-            self.cell_colors = cell_colors
-        self.update()
-
-    def __repr__(self):
-        return self.name
-    def get_view_in_lab_frame(self, view_axis):
-        return self.rot.apply(view_axis)
-    def update(self):
-        self.rot = Rotation.from_euler('ZXZ', self.orient_array, degrees = True)
-        self.lab_frame_axes = self.rot.as_matrix()
-        self.orient_reciprocal_lattices_to_lab()
-    def get_reciprocal_lattice_vectors(self):
-        a, b, c = np.array((self.a,0,0)), np.array((0,self.b,0)), np.array((0,0,self.c))
-        v = self.v
-        astar = np.cross(b,c)/v
-        bstar = np.cross(c,a)/v
-        cstar = np.cross(a,b)/v
-        self.astar = astar[0]
-        self.bstar = bstar[1]
-        self.cstar = cstar[2]
-    def generate_reciprocal_lattice_to_q(self):
-        arange = np.ceil(self.q_range / self.astar)
-        brange = np.ceil(self.q_range / self.bstar)
-        crange = np.ceil(self.q_range / self.cstar)
-        astar_inds = np.arange(-arange, arange+1)
-        bstar_inds = np.arange(-brange, brange+1)
-        cstar_inds = np.arange(-crange, crange+1)
-        span = int((2*arange+1)*(2*brange+1)*(2*crange+1))
-        astars = astar_inds*self.astar
-        bstars = bstar_inds*self.bstar
-        cstars = cstar_inds*self.cstar
-        self.reciprocal_lattice = np.asarray(np.meshgrid(astars,bstars,cstars)).reshape((3, span))
-        self.rl_qs = np.linalg.norm(self.reciprocal_lattice, axis = 0)
-        q_mask = self.rl_qs < self.q_range
-        self.rl_qs = self.rl_qs[q_mask]
-        self.reciprocal_lattice = self.reciprocal_lattice[:,q_mask]
-        self.rl_alphas = np.where(np.abs(self.rl_qs - self.q_probe) < 0.1, 5, 0.25)
-        self.q_of_interest =  np.where(np.abs(self.rl_qs - self.q_probe)<0.1, True, False)
-    def orient_reciprocal_lattices_to_sample(self):
-        self.sample_space_rlatts = [co.apply(self.reciprocal_lattice.T).T for co in self.cell_orientations]
-    def orient_reciprocal_lattices_to_lab(self):
-        self.lab_space_rlatts = np.asarray([self.rot.apply(rl.T).T for rl in self.sample_space_rlatts])
-
-
-class Goniometer:
-    def __init__(self, scale = 1):
-        self.z_norm_init = np.array((0,0,1))
-        self.x_prime_norm_init = np.array((1,0,0))
-        self.z_prime_norm_init = np.array((0,0,1))
-        self.z_norm = np.array((0,0,1))
-        self.x_prime_norm = np.array((1,0,0))
-        self.z_prime_norm = np.array((0,0,1))
-        self.scale = scale
-        self.update_equators()
-        self.phi_frac = 0
-        self.theta_frac = 0
-        self.psi_frac = 0
-
-    def equator(self, r = 1.0, res = 100, offset=(0,0,0)):
-        r = self.scale * r
-        u = np.linspace(0, 2 * np.pi, res)
-        x = r*np.cos(u) + offset[0]
-        y = r*np.sin(u) + offset[1]
-        z = np.zeros_like(x) + offset[2]
-        return np.concatenate((x[None,:],y[None,:],z[None,:]), axis = 0)
-
-    def orient_to_pole(self, eq, view_axis):
-        bisect = view_axis + ((np.array((0,0,1)) - view_axis)/2)
-        bisect = (bisect/np.linalg.norm(bisect))*-np.pi
-        rot = Rotation.from_rotvec(bisect)
-        return rot.apply(eq.T).T
-
-    def update_norms(self, phi, theta):
-        rot1 = Rotation.from_euler('Z', phi, degrees=True)
-        rot2 = Rotation.from_euler('ZX', [phi, theta], degrees=True)
-        self.x_prime_norm = rot1.apply(self.x_prime_norm_init)
-        self.z_prime_norm = rot2.apply(self.z_prime_norm_init)
-
-    def update_equators(self):
-        self.z_eq = self.orient_to_pole(self.equator(r = 3), self.z_norm)
-        self.x_prime_eq = self.orient_to_pole(self.equator(r = 2.95), self.x_prime_norm)
-        self.z_prime_eq = self.orient_to_pole(self.equator(r = 2.9), self.z_prime_norm)
-
-    def update_fracs(self, phi, theta, psi):
-        self.phi_frac = int((phi/360)*self.z_eq.shape[1])
-        self.theta_frac = int((theta/360)*self.x_prime_eq.shape[1])
-        self.psi_frac = int((psi/360)*self.z_prime_eq.shape[1])
-
 
 
 
@@ -246,6 +118,8 @@ class Model():
         dists = np.linalg.norm(disp_vecs, axis = 2)
         relevant_dists = np.where(dists < thresh, np.exp(-dists), 0)
         self.detector_readout = relevant_dists.sum(axis = (1,2))
+
+
 
     def setup_pole(self):
         self.pole_cart_array = self.get_sphere_cart_array(r=self.pole_radius, offset=(0, 0, 0))
