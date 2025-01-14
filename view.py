@@ -76,6 +76,12 @@ class View():
             cube.append(ax.plot_surface(X[:, :, i], Y[:, :, i], Z[:, :, i], alpha=0.5, color=col[2]))
         return cube
 
+    def plot_ewald_detector_vectors(self, ax, pole_Ks, detector_colors):
+        artists = []
+        for i, K in enumerate(pole_Ks):
+            artists.append(ax.quiver(0,0,0, K[0], K[1], K[2], arrow_length_ratio = 0.05, color = detector_colors[i]))
+        return artists
+
     def plot_pole_figure_vectors(self, ax, pole_Ks, detector_colors, pole_K_projs_vec):
         artists = []
         for i, K in enumerate(pole_Ks):

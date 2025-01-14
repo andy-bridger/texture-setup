@@ -21,7 +21,7 @@ class Presenter():
         self.o_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, outer_sphere_data)
         self.plot_probe_ewald()
     def plot_recip_lattices(self):
-        self.Model.sample.adjust_alphas(self.Model.r_dict['q_probe'])
+        self.Model.sample.adjust_alphas(self.Model.qs_of_interest[self.Model.probe_ind])
         self.r_latt_artists = self.View.show_reciprocal_lattices(self.View.recip_ax,
                                                                  self.Model.sample.lab_space_rlatts,
                                                                  self.Model.sample.cell_colors,
@@ -30,6 +30,10 @@ class Presenter():
         self.recip_sample_artist = self.View.plot_cube(self.View.recip_ax,
                                                        self.Model.get_sample(ratio = 0.05*self.Model.r_dict['recip_sample']),
                                                        ('red', 'blue', 'green'))
+    def plot_ewald_detector_Ks(self):
+        self.ewald_detector_vector_artists = self.View.plot_ewald_detector_vectors(self.View.recip_ax,
+                                                                             self.Model.pKs[:,self.Model.probe_ind],
+                                                                             self.Model.detector_colors)
     def plot_lab_sample(self):
         self.lab_sample_artist = self.View.plot_cube(self.View.lab_ax,
                                                      self.Model.get_sample(ratio=2*self.Model.r_dict['lab_sample']),
@@ -120,6 +124,7 @@ class Presenter():
         self.plot_recip_sample()
         self.plot_recip_lattices()
         self.plot_ewald()
+        self.plot_ewald_detector_Ks()
         self.plot_pole_sphere()
 
         # Pole Detector Frame
@@ -165,6 +170,7 @@ class Presenter():
         self.plot_recip_lattices()
         self.plot_ewald()
         self.plot_pole_sphere()
+        self.plot_ewald_detector_Ks()
 
         # Pole Detector Frame
         self.plot_pole_figure_detectors()
@@ -214,6 +220,7 @@ class Presenter():
         self.det_probe_artist.remove()
         self.remove_artist_set(self.pole_figure_artists)
         self.remove_artist_set(self.r_latt_artists)
+        self.remove_artist_set(self.ewald_detector_vector_artists)
         self.p_ewald_sphere_artist.remove()
         self.pole_figure_artists = []
         self.Model.r_dict['q_probe'] = val
@@ -223,6 +230,7 @@ class Presenter():
         self.plot_q_probe()
         self.plot_probe_ewald()
         self.plot_recip_lattices()
+        self.plot_ewald_detector_Ks()
 
     def remove_artist_set(self, artists):
         for a in artists:
