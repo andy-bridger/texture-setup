@@ -1,7 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
-
+from goniometer import Goniometer
+from detector import Detector
+from source import Source
+from sample import Sample
+from helper_funcs import *
 
 
 
@@ -107,9 +111,10 @@ class Model():
     def get_detector_Ks(self):
         Ks = self.get_Ks()
         Gs = []
-        for K in Ks:
-            roots = self.sphere_line_intercept(np.zeros(3), K, -self.ki*self.ewald_radius, self.ewald_radius)
+        for iK, K in enumerate(Ks):
+            roots = sphere_line_intercept(np.zeros(3), K, -self.ki*self.ewald_radius, self.ewald_radius)
             Gs.append(roots[roots!=0]*K)
+            self.detectors[iK].K = roots[roots!=0]*K
         return np.asarray(Gs)
 
     def get_detector_signal(self, thresh = 0.1):
@@ -141,22 +146,6 @@ class Model():
         proj_point = (u*svec) + oppole
         return self.orient_to_pole(proj_point, self.north_pole)
 
-    def sphere_line_intercept(self, p1, p2, p3, r):
-        """
-        p1: one point on line (ideally vector representation of line so this can be (0,0,0)
-        p2: another point on line (if vector repr, p2 = vec)
-        p3: centre of sphere
-        r:  radius of sphere
-        """
-
-        a = np.sum((p2-p1)**2)
-        b = 2*(np.dot(p2-p1, p1-p3))
-        c = np.sum(p3**2) + np.sum(p1**2) - 2*np.dot(p3, p1) - r**2
-
-        roots = np.array((-b+np.sqrt((b**2) - 4*a*c))/(2*a) , (-b-np.sqrt((b**2) - 4*a*c))/(2*a))
-
-        return roots
-
     def equator(self, r = None, res = 100, offset=(0,0,0)):
         if r == None:
             r = self.pole_radius
@@ -180,7 +169,7 @@ class Model():
     def get_pole_K_intercepts(self):
         Gs = []
         for K in self.Ks:
-            roots = self.sphere_line_intercept(np.zeros(3), K, self.sample.position, self.pole_radius)
+            roots = sphere_line_intercept(np.zeros(3), K, self.sample.position, self.pole_radius)
             Gs.append(roots[roots!=0]*K)
         return np.asarray(Gs)
 

@@ -1,7 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
-from model import *
+from model import Model
+from goniometer import Goniometer
+from detector import Detector
+from source import Source
+from sample import Sample
 from presenter import Presenter
 from view import View
 

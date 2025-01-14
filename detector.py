@@ -1,3 +1,7 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.spatial.transform import Rotation
+
 class Detector:
     def __init__(self, position, name):
         self.name = f'detector {name}'
