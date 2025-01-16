@@ -8,7 +8,7 @@ from matplotlib.widgets import Slider, Button, TextBox
 class View():
     def __init__(self):
         pass
-    def setup_view(self, pole_radius):
+    def setup_view(self):
         self.fig = plt.figure()
         gs0 = self.fig.add_gridspec(10, 10, wspace = 0.1, hspace= 0.0)
         self.lab_ax = self.fig.add_subplot(gs0[:7, :5], projection='3d')
@@ -16,8 +16,8 @@ class View():
         self.pole_proj_ax = self.fig.add_subplot(gs0[6:8, 0:5])
         self.det_ax = self.fig.add_subplot(gs0[6:8, 4:7])
         self.calc_pf_ax = self.fig.add_subplot(gs0[6:8, 6:10])
-        self.pole_proj_ax.set_xlim([-pole_radius-0.1, pole_radius+0.1])
-        self.pole_proj_ax.set_ylim([-pole_radius-0.1, pole_radius+0.1])
+        self.pole_proj_ax.set_xlim([-1.1, 1.1])
+        self.pole_proj_ax.set_ylim([-1.1, 1.1])
         self.recip_ax.set_axis_off()
         self.pole_proj_ax.set_axis_off()
         self.lab_ax.set_axis_off()

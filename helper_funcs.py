@@ -74,8 +74,11 @@ def equator(r = 1, res = 100, offset=(0,0,0)):
     z = np.zeros_like(x) + offset[2]
     return np.concatenate((x[None,:],y[None,:],z[None,:]), axis = 0)
 
-def orient_to_pole(eq, view_axis):
+def get_rot_to_orient_pole_to_z(view_axis):
     bisect = view_axis + ((np.array((0,0,1)) - view_axis)/2)
     bisect = (bisect/np.linalg.norm(bisect))*-np.pi
-    rot = Rotation.from_rotvec(bisect)
+    return Rotation.from_rotvec(bisect)
+
+def orient_to_pole(eq, view_axis):
+    rot = get_rot_to_orient_pole_to_z(view_axis)
     return rot.apply(eq.T).T

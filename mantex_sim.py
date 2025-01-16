@@ -10,11 +10,10 @@ from experiment import ExperimentalData
 from model import Mantex
 
 class MantexSim(Mantex):
-    def __init__(self, source, detectors, sample, goniometer, ewald_radii, pole_radius,
+    def __init__(self, source, detectors, sample, goniometer, ewald_radii,
                  sample_view_axis, detector_colors = None, ewald_steps = 2, q_probe = 1):
 
-        super().__init__(source, detectors, sample, goniometer, ewald_radii, pole_radius,
-                 sample_view_axis, detector_colors, ewald_steps, q_probe)
+        super().__init__(source, detectors, sample, goniometer, sample_view_axis)
 
         self.exp_data = []
         self.r_dict = {'recip_sample': 1,
@@ -26,7 +25,6 @@ class MantexSim(Mantex):
         self.ewald_radii = ewald_radii
         self.ewald_radius = ewald_radii[0]
         self.q_range = np.linspace(ewald_radii[0], ewald_radii[1], ewald_steps)
-        self.pole_radius = pole_radius
         self.pole_figure_intensities = np.array(())
         if detector_colors == None:
             self.detector_colors = ['black']*len(detectors)
@@ -52,7 +50,7 @@ class MantexSim(Mantex):
         self.create_experiment()
 
     def setup_pole(self):
-        self.pole_cart_array = get_sphere_cart_array(r=self.pole_radius, offset=(0, 0, 0))
+        self.pole_cart_array = get_sphere_cart_array(r=1, offset=(0, 0, 0))
 
     def get_probe_ind(self):
         self.probe_ind = np.searchsorted(self.q_range, self.r_dict['q_probe'], 'left')
@@ -60,11 +58,8 @@ class MantexSim(Mantex):
             det.readout_probe = self.probe_ind
 
     def update(self):
-        self.pole_view_axis = self.sample.get_view_in_lab_frame(self.sample_view_axis)
-        self.north_pole = self.pole_view_axis/np.linalg.norm(self.pole_view_axis)
-        self.south_pole = -self.north_pole
-
-        self.calc_pole()
+        self.update_pole_positions()
+        self.update_proj_Ks()
         self.get_detector_signal()
         self.get_probe_ind()
         self.get_inplane_pole_figure()
@@ -84,6 +79,9 @@ class MantexSim(Mantex):
 
             pKs.append(det_pKs)
         self.pKs = np.asarray(pKs)
+
+    def update_proj_Ks(self):
+        self.pole_K_projs_vec = np.asarray([self.pole_K_projs[i] - K for i, K in enumerate(self.pole_Ks)])
 
 
     def get_detector_signal(self, thresh = 0.1):
@@ -106,6 +104,7 @@ class MantexSim(Mantex):
 
     def get_inplane_pole_figure(self):
         self.get_detector_signal()
+
         readouts = [det.get_readout() for det in self.detectors]
         if len(self.pole_figure_intensities) == 0:
             self.pole_figure_intensities = self.get_pole_figure_intensities(readouts)

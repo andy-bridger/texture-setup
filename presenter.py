@@ -9,7 +9,7 @@ class Presenter():
         self.init_view()
         self.pole_figure_artists =[]
     def setup_view(self):
-        self.View.setup_view(self.Model.pole_radius)
+        self.View.setup_view()
     def toggle_visible(self, artist):
         artist.set_visible(not artist._visible)
     def plot_probe_ewald(self):
@@ -63,7 +63,9 @@ class Presenter():
                                                 det_cols[i]) for i, det_repr in enumerate(det_reprs)]
     def plot_pole_sphere(self):
         self.pole_sphere_artist = self.View.plot_sphere(self.View.recip_ax, self.Model.pole_cart_array)
-        self.pole_sphere_eq_artist = self.View.plot_line(self.View.recip_ax, self.Model.eq_cart)
+        self.pole_sphere_eq_artist = self.View.plot_line(self.View.recip_ax,
+                                                         orient_to_pole(equator(r=1),
+                                                                        self.Model.pole_view_axis))
         self.pole_sphere_vector_artists = self.View.plot_pole_figure_vectors(self.View.recip_ax,
                                                                              self.Model.pole_Ks,
                                                                              self.Model.detector_colors,
@@ -157,7 +159,7 @@ class Presenter():
         self.View.fig.canvas.draw()
 
     def init_view(self):
-        self.View.setup_view(self.Model.pole_radius)
+        self.View.setup_view()
         self.View.update_view_axes()
         self.View.add_goniometer_widgets(self.goniometer_update)
         self.View.add_lab_k_widgets(self.lab_k_update)
