@@ -137,8 +137,12 @@ class Presenter():
         self.View.fix_aspect()
 
     def run_experiment(self):
+        self.Model.create_experiment()
         for gonio_pos in self.Model.goniometer.exp_runs:
             self.upon_goniometer_change(*gonio_pos)
+            self.Model.exp_data.goniometer_positions.append(gonio_pos)
+            self.Model.exp_data.detector_readouts.append([det.readout for det in self.Model.detectors])
+        self.Model.exp_data.save_exp()
 
     def click_run_exp(self, val):
         self.remove_artist_set(self.pole_figure_artists)

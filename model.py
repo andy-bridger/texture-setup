@@ -6,7 +6,7 @@ from detector import Detector
 from source import Source
 from sample import Sample
 from helper_funcs import *
-
+from experiment import ExperimentalData
 
 
 class Model():
@@ -15,6 +15,7 @@ class Model():
         self.source = source
         self.detectors = detectors
         self.sample = sample
+        self.exp_data = []
         self.goniometer = goniometer
         self.r_dict = {'recip_sample': 1,
                                    'lab_sample': 1,
@@ -260,3 +261,6 @@ class Model():
     def get_sample(self, ratio = 0.1):
         cube = self.get_cube(offset = (0,0, 0), size = self.ewald_radius*np.ones(3)*ratio)
         return cube
+
+    def create_experiment(self):
+        self.exp_data = ExperimentalData(self.detectors)
