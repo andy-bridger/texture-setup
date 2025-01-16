@@ -145,7 +145,7 @@ class Presenter():
         for gonio_pos in self.Model.goniometer.exp_runs:
             self.upon_goniometer_change(*gonio_pos)
             self.Model.exp_data.goniometer_positions.append(gonio_pos)
-            self.Model.exp_data.detector_readouts.append([det.readout for det in self.Model.detectors])
+            self.Model.exp_data.detector_readouts.append([det.spectrum for det in self.Model.detectors])
         self.Model.exp_data.save_exp()
 
     def assign_file_name(self, val):
