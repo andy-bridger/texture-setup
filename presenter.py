@@ -17,8 +17,8 @@ class Presenter():
     def plot_ewald(self):
         inner_sphere_data = self.Model.calc_ewald(self.Model.ewald_radii[0])
         outer_sphere_data = self.Model.calc_ewald(self.Model.ewald_radii[1])
-        self.i_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, inner_sphere_data)
-        self.o_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, outer_sphere_data)
+        self.i_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, inner_sphere_data, alpha = 0.1)
+        self.o_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, outer_sphere_data, alpha = 0.1)
         self.plot_probe_ewald()
     def plot_recip_lattices(self):
         self.Model.sample.adjust_alphas(self.Model.qs_of_interest[self.Model.probe_ind])
@@ -136,6 +136,18 @@ class Presenter():
 
         self.View.fix_aspect()
 
+    def run_experiment(self):
+        for gonio_pos in self.Model.goniometer.exp_runs:
+            self.upon_goniometer_change(*gonio_pos)
+
+    def click_run_exp(self, val):
+        self.remove_artist_set(self.pole_figure_artists)
+        self.pole_figure_artists = []
+        self.run_experiment()
+        self.plot_pole_figure_intensities()
+        self.View.fix_aspect()
+        self.View.fig.canvas.draw()
+
     def init_view(self):
         self.View.setup_view(self.Model.pole_radius)
         self.View.update_view_axes()
@@ -148,9 +160,15 @@ class Presenter():
                                        self.Model.ewald_radii[0],
                                        self.Model.ewald_radii[1],
                                        self.Model.r_dict['q_probe'])
+        self.View.add_run_experiment_button(self.click_run_exp)
+
+    def upon_goniometer_change(self, phi, theta, psi):
+        self.Model.sample.orient_array = [phi, theta, psi]
+        self.Model.sample.update()
+        self.Model.update()
 
     def goniometer_update(self, val):
-        self.Model.sample.orient_array = [self.View.slider_phi.val, self.View.slider_theta.val, self.View.slider_psi.val]
+        self.upon_goniometer_change(self.View.slider_phi.val, self.View.slider_theta.val, self.View.slider_psi.val)
         self.Model.sample.update()
         self.Model.update()
         self.View.update_view_axes()

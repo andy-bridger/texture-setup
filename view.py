@@ -3,19 +3,19 @@ import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 from model import *
 
-from matplotlib.widgets import Slider, CheckButtons
+from matplotlib.widgets import Slider, Button
 
 class View():
     def __init__(self):
         pass
     def setup_view(self, pole_radius):
         self.fig = plt.figure()
-        gs0 = self.fig.add_gridspec(7, 10)
-        self.lab_ax = self.fig.add_subplot(gs0[0:3, :8], projection='3d')
-        self.recip_ax = self.fig.add_subplot(gs0[3:6, :8], projection='3d')
-        self.pole_proj_ax = self.fig.add_subplot(gs0[:2, 8:])
-        self.det_ax = self.fig.add_subplot(gs0[2:4, 8:])
-        self.calc_pf_ax = self.fig.add_subplot(gs0[4:6, 8:])
+        gs0 = self.fig.add_gridspec(10, 10, wspace = 0.1, hspace= 0.0)
+        self.lab_ax = self.fig.add_subplot(gs0[:7, :5], projection='3d')
+        self.recip_ax = self.fig.add_subplot(gs0[:7, 5:10], projection='3d')
+        self.pole_proj_ax = self.fig.add_subplot(gs0[6:8, 0:5])
+        self.det_ax = self.fig.add_subplot(gs0[6:8, 4:7])
+        self.calc_pf_ax = self.fig.add_subplot(gs0[6:8, 6:10])
         self.pole_proj_ax.set_xlim([-pole_radius-0.1, pole_radius+0.1])
         self.pole_proj_ax.set_ylim([-pole_radius-0.1, pole_radius+0.1])
         self.recip_ax.set_axis_off()
@@ -55,10 +55,10 @@ class View():
             artists.append(ax.scatter(xs=rl[0], ys= rl[1], zs= rl[2], c=cell_colors[i], s = rl_alphas))
         return artists
 
-    def plot_sphere(self, ax = None, cart_array = None, c = 'grey'):
+    def plot_sphere(self, ax = None, cart_array = None, c = 'grey', alpha = 0.25):
         # Plot the surface
         x,y,z = cart_array
-        return ax.plot_surface(x, y, z, color=c, alpha = 0.25)
+        return ax.plot_surface(x, y, z, color=c, alpha = alpha)
 
     def plot_line(self, ax = None, cart_array = None, scale = 1, color = 'grey'):
         # Plot the surface
@@ -160,23 +160,28 @@ class View():
         self.slider_psi.on_changed(update_plot)
 
     def add_lab_k_widgets(self, update_lab_k):
-        pos = plt.axes([0.95, 0.09, 0.025, 0.03])
+        pos = plt.axes([0.85, 0.09, 0.025, 0.03])
         self.lab_k_vec_slider = Slider(pos, 'K scale', 0.05, 2, valinit=1.0, valstep = 0.05)
         self.lab_k_vec_slider.on_changed(update_lab_k)
     def add_sample_scale_widget(self, update_sample_scale):
-        pos = plt.axes([0.95, 0.05, 0.025, 0.03])
+        pos = plt.axes([0.85, 0.05, 0.025, 0.03])
         self.sample_slider = Slider(pos, 'Sample scale', 0.1, 3, valinit=1.0, valstep = 0.1)
         self.sample_slider.on_changed(update_sample_scale)
     def add_gonio_ring_scale_widget(self, update_gr_scale):
-        pos = plt.axes([0.95, 0.01, 0.025, 0.03])
+        pos = plt.axes([0.85, 0.01, 0.025, 0.03])
         self.ring_slider = Slider(pos, 'Ring scale', 0.1, 3, valinit=1.0, valstep = 0.1)
         self.ring_slider.on_changed(update_gr_scale)
     def add_gonio_axis_scale_widget(self, update_ga_scale):
-        pos = plt.axes([0.85, 0.01, 0.025, 0.03])
+        pos = plt.axes([0.70, 0.01, 0.025, 0.03])
         self.ga_slider = Slider(pos, 'GA scale', 0.1, 5, valinit=3.0, valstep = 0.1)
         self.ga_slider.on_changed(update_ga_scale)
 
     def add_probe_pos_widget(self, update_probe_p_scale, min, max, init):
-        pos = plt.axes([0.85, 0.05, 0.025, 0.03])
+        pos = plt.axes([0.70, 0.05, 0.025, 0.03])
         self.probe_p_slider = Slider(pos, 'probe Q', min, max, valinit=init, valstep = 0.02)
         self.probe_p_slider.on_changed(update_probe_p_scale)
+
+    def add_run_experiment_button(self, run_exp):
+        pos = plt.axes([0.70, 0.09, 0.025, 0.03])
+        self.run_butt = Button(pos, 'run')
+        self.run_butt.on_clicked(run_exp)

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 
 class Goniometer:
-    def __init__(self, scale = 1):
+    def __init__(self, scale = 1, exp_runs = ()):
         self.z_norm_init = np.array((0,0,1))
         self.x_prime_norm_init = np.array((1,0,0))
         self.z_prime_norm_init = np.array((0,0,1))
@@ -15,6 +15,7 @@ class Goniometer:
         self.phi_frac = 0
         self.theta_frac = 0
         self.psi_frac = 0
+        self.exp_runs= exp_runs
 
     def equator(self, r = 1.0, res = 100, offset=(0,0,0)):
         r = self.scale * r

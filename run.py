@@ -18,10 +18,12 @@ sdet = Detector([0, -10, 0], 'south')
 source = Source([20, 0 , 0])
 sample = Sample([0,0,0], [0,0,0],
                 (1,1,1), 2,
-                [(0,0,0),(45,0,0)], q_probe=1.41,
-                cell_colors=['pink', 'purple'])
+                [(0,0,0)], q_probe=1,
+                cell_colors=['purple'])
 
-goniometer = Goniometer()
+exp_runs = [(phi, theta, 0) for theta in np.arange(0, 360, 45) for phi in np.arange(0, 360, 45) ]
+
+goniometer = Goniometer(exp_runs = exp_runs)
 
 model = Model(source,
               [ndet,ndet2, sdet],
