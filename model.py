@@ -45,7 +45,7 @@ class Mantex():
 
     def update_pole_positions(self):
         # Update orientation of the view axis so the detectors positions can remain in lab frame
-        self.pole_view_axis = self.sample.get_view_in_lab_frame(self.sample_view_axis)
+        self.pole_view_axis = self.goniometer.rot.apply(self.sample_view_axis)
         self.north_pole = self.pole_view_axis / np.linalg.norm(self.pole_view_axis)
 
         # Project the K vectors through the equator of the new orientation
@@ -75,7 +75,7 @@ class Mantex():
         self.calc_pole() # calculate the new projections of the detector Ks in lab space
 
         # convert these projections back into sample axes - where the view direction is specified
-        self.pole_figure_points = self.sample.rot.apply(self.pole_K_projs, inverse=True)
+        self.pole_figure_points = self.goniometer.rot.apply(self.pole_K_projs, inverse=True)
 
         # append the readout intensity to the sample space position information
         pfi = []

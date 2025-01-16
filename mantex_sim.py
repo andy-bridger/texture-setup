@@ -109,9 +109,9 @@ class MantexSim(Mantex):
         if len(self.pole_figure_intensities) == 0:
             self.pole_figure_intensities = self.get_pole_figure_intensities(readouts)
         else:
-            self.pole_figure_intensities = np.concatenate((self.pole_figure_intensities,
-                                                           self.get_pole_figure_intensities(readouts)),
-                                                          axis = 0)
+            new_pfi = self.get_pole_figure_intensities(readouts)
+            insertion_inds = np.searchsorted(self.pole_figure_intensities[:,-1], new_pfi[:,-1])
+            self.pole_figure_intensities = np.insert(self.pole_figure_intensities, insertion_inds, new_pfi, axis = 0)
 
 
     def calc_ewald(self, er):

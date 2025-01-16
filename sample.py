@@ -2,7 +2,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 class Sample:
-    def __init__(self, position, orientation, cell_parameters, q_range,
+    def __init__(self, position, goniometer, cell_parameters, q_range,
                  cell_orientations, cell_colors=None, q_probe = 1,
                  sample_scale = 1):
         '''
@@ -11,7 +11,7 @@ class Sample:
         '''
         self.name = 'sample'
         self.position = np.asarray(position)
-        self.orient_array = orientation
+        self.goniometer = goniometer
         self.cell_parameters = cell_parameters
         self.sample_scale = sample_scale
         self.a, self.b, self.c = cell_parameters
@@ -34,7 +34,7 @@ class Sample:
     def get_view_in_lab_frame(self, view_axis):
         return self.rot.apply(view_axis)
     def update(self):
-        self.rot = Rotation.from_euler('ZXZ', self.orient_array, degrees = True)
+        self.rot = self.goniometer.rot
         self.lab_frame_axes = self.rot.as_matrix()
         self.orient_reciprocal_lattices_to_lab()
     def get_reciprocal_lattice_vectors(self):

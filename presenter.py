@@ -174,14 +174,12 @@ class Presenter():
         self.View.add_exp_name_textbox(self.assign_file_name)
 
     def upon_goniometer_change(self, phi, theta, psi):
-        self.Model.sample.orient_array = [phi, theta, psi]
+        self.Model.goniometer.update_angles(phi, theta, psi)
         self.Model.sample.update()
         self.Model.update()
 
     def goniometer_update(self, val):
         self.upon_goniometer_change(self.View.slider_phi.val, self.View.slider_theta.val, self.View.slider_psi.val)
-        self.Model.sample.update()
-        self.Model.update()
         self.View.update_view_axes()
 
         # Lab Frame
@@ -189,9 +187,9 @@ class Presenter():
         self.remove_artist_set(self.z_artist)
         self.remove_artist_set(self.xp_artist)
         self.remove_artist_set(self.zp_artist)
-        self.Model.goniometer.update_norms(self.View.slider_phi.val, self.View.slider_theta.val)
+        self.Model.goniometer.update_norms()
         self.Model.goniometer.update_equators()
-        self.Model.goniometer.update_fracs(self.View.slider_phi.val, self.View.slider_theta.val, self.View.slider_psi.val)
+        self.Model.goniometer.update_fracs()
         self.plot_goniometer()
 
         # Recip Frame

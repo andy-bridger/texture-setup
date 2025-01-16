@@ -17,14 +17,16 @@ ndet = Detector([0, 10, 0], 'north')
 ndet2 = Detector([5*np.sqrt(2), 5*np.sqrt(2), 0], 'north2')
 sdet = Detector([0, -10, 0], 'south')
 source = Source([20, 0 , 0])
-sample = Sample([0,0,0], [0,0,0],
-                (1,1,1), 2,
-                [(0,0,0)], q_probe=1,
-                cell_colors=['purple'])
 
 exp_runs = [(phi, theta, 0) for theta in np.arange(0, 360, 45) for phi in np.arange(0, 360, 45) ]
 
 goniometer = Goniometer(exp_runs = exp_runs)
+
+sample = Sample([0,0,0], goniometer,
+                (1,1,1), 2,
+                [(0,0,0)], q_probe=1,
+                cell_colors=['purple'])
+
 
 model = MantexSim(source,
               [ndet,ndet2, sdet],
