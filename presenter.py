@@ -13,7 +13,7 @@ class Presenter():
     def toggle_visible(self, artist):
         artist.set_visible(not artist._visible)
     def plot_probe_ewald(self):
-        probe_sphere_data = self.Model.calc_ewald(self.Model.r_dict['q_probe'])
+        probe_sphere_data = self.Model.calc_ewald(self.Model.q_probe)
         self.p_ewald_sphere_artist = self.View.plot_sphere(self.View.recip_ax, probe_sphere_data, c='gold')
     def plot_ewald(self):
         inner_sphere_data = self.Model.calc_ewald(self.Model.ewald_radii[0])
@@ -112,7 +112,9 @@ class Presenter():
                                                                        self.Model.detector_colors)
 
     def plot_q_probe(self):
-        self.det_probe_artist = self.View.show_detector_probe(self.View.det_ax, self.Model.r_dict['q_probe'])
+        self.det_probe_artist = self.View.show_detector_probe(self.View.det_ax,
+                                                              self.Model.q_probe,
+                                                              self.Model.probe_window)
 
     def plot_all(self):
         # Lab Frame
@@ -169,7 +171,7 @@ class Presenter():
         self.View.add_probe_pos_widget(self.update_probe_pos,
                                        self.Model.ewald_radii[0],
                                        self.Model.ewald_radii[1],
-                                       self.Model.r_dict['q_probe'])
+                                       self.Model.q_probe)
         self.View.add_run_experiment_button(self.click_run_exp)
         self.View.add_exp_name_textbox(self.assign_file_name)
 
@@ -244,15 +246,15 @@ class Presenter():
         self.View.fix_aspect()
 
     def update_probe_pos(self, val):
-        self.det_probe_artist.remove()
+        self.remove_artist_set(self.det_probe_artist)
         self.remove_artist_set(self.pole_figure_artists)
         self.remove_artist_set(self.r_latt_artists)
         self.remove_artist_set(self.ewald_detector_vector_artists)
         self.p_ewald_sphere_artist.remove()
         self.pole_figure_artists = []
-        self.Model.r_dict['q_probe'] = val
-        self.Model.get_probe_ind()
-        self.Model.setup_inplane_pole_figure()
+        self.Model.update_q_probe(val)
+        self.Model.reset_pole_figure()
+        self.Model.get_inplane_pole_figure()
         self.plot_pole_figure_intensities()
         self.plot_q_probe()
         self.plot_probe_ewald()

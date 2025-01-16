@@ -13,18 +13,18 @@ class MantexSim(Mantex):
     def __init__(self, source, detectors, sample, goniometer, ewald_radii,
                  sample_view_axis, detector_colors = None, ewald_steps = 2, q_probe = 1):
 
-        super().__init__(source, detectors, sample, goniometer, sample_view_axis)
+        super().__init__(source, detectors, sample, goniometer, sample_view_axis, q_probe)
 
         self.exp_data = []
         self.r_dict = {'recip_sample': 1,
                                    'lab_sample': 1,
                                    'k_vecs': 1,
                                    'gonio_r': 1,
-                                   'gonio_v': 1,
-                                    'q_probe': q_probe}
+                                   'gonio_v': 1}
         self.ewald_radii = ewald_radii
         self.ewald_radius = ewald_radii[0]
         self.q_range = np.linspace(ewald_radii[0], ewald_radii[1], ewald_steps)
+        self.update_q_probe(q_probe)
         self.pole_figure_intensities = np.array(())
         if detector_colors == None:
             self.detector_colors = ['black']*len(detectors)
@@ -40,7 +40,6 @@ class MantexSim(Mantex):
         self.setup_qrange_rl()
         self.setup_pole()
 
-        self.get_probe_ind()
 
         self.show_lab_K_vecs = True
         self.lab_K_vecs = []
@@ -52,16 +51,14 @@ class MantexSim(Mantex):
     def setup_pole(self):
         self.pole_cart_array = get_sphere_cart_array(r=1, offset=(0, 0, 0))
 
-    def get_probe_ind(self):
-        self.probe_ind = np.searchsorted(self.q_range, self.r_dict['q_probe'], 'left')
-        for det in self.detectors:
-            det.readout_probe = self.probe_ind
+    def update_q_probe(self, val):
+        self.q_probe = val
+        self.probe_ind = np.searchsorted(self.q_range, val, 'left')
 
     def update(self):
         self.update_pole_positions()
         self.update_proj_Ks()
         self.get_detector_signal()
-        self.get_probe_ind()
         self.get_inplane_pole_figure()
 
     def setup_qrange_rl(self):
@@ -97,22 +94,24 @@ class MantexSim(Mantex):
             q_space_readouts.append(relevant_dists.sum(axis = (1,2)))
         q_space_readouts = np.asarray(q_space_readouts)
 
-        # placeholder to keep other functions working
         self.detector_readout = q_space_readouts.T
         for idet, det in enumerate(self.detectors):
-            det.readout = self.detector_readout[idet]
+            det.spectrum = np.concatenate((self.q_range[:,None], self.detector_readout[idet][:,None]),
+                                          axis =1)
 
     def get_inplane_pole_figure(self):
         self.get_detector_signal()
 
-        readouts = [det.get_readout() for det in self.detectors]
+        spectra = [det.spectrum for det in self.detectors]
         if len(self.pole_figure_intensities) == 0:
-            self.pole_figure_intensities = self.get_pole_figure_intensities(readouts)
+            self.pole_figure_intensities = self.get_pole_figure_intensities(spectra)
         else:
-            new_pfi = self.get_pole_figure_intensities(readouts)
+            new_pfi = self.get_pole_figure_intensities(spectra)
             insertion_inds = np.searchsorted(self.pole_figure_intensities[:,-1], new_pfi[:,-1])
             self.pole_figure_intensities = np.insert(self.pole_figure_intensities, insertion_inds, new_pfi, axis = 0)
 
+    def reset_pole_figure(self):
+        self.pole_figure_intensities = ()
 
     def calc_ewald(self, er):
         return get_sphere_cart_array(r = er, offset = -self.ki*er)

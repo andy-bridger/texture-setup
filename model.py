@@ -7,10 +7,13 @@ from source import Source
 from sample import Sample
 from helper_funcs import *
 from experiment import ExperimentalData
+from scipy.stats import norm
+from scipy.optimize import curve_fit
 
 
 class Mantex():
-    def __init__(self, source, detectors, sample, goniometer, sample_view_axis):
+    def __init__(self, source, detectors, sample, goniometer,
+                 sample_view_axis, q_probe, probe_window = 0.05):
         self.source = source
         self.detectors = detectors
         self.sample = sample
@@ -20,6 +23,8 @@ class Mantex():
         self.ki_raw_scale = np.linalg.norm(self.ki_raw)
         self.ki = self.ki_raw/self.ki_raw_scale
         self.Ks = self.get_Ks()
+        self.q_probe = q_probe
+        self.probe_window = probe_window
 
 
     def get_Ks(self):
@@ -71,7 +76,7 @@ class Mantex():
             return rot.apply(proj_point, inverse=True)
 
 
-    def get_pole_figure_intensities(self, readouts):
+    def get_pole_figure_intensities(self, spectra):
         self.calc_pole() # calculate the new projections of the detector Ks in lab space
 
         # convert these projections back into sample axes - where the view direction is specified
@@ -80,9 +85,21 @@ class Mantex():
         # append the readout intensity to the sample space position information
         pfi = []
         for di in range(len(self.detectors)):#just read the probe channel for now
-            dr = readouts[di]
+            dr = self.readout_spectrum(spectra[di])
             npfi = np.concatenate((self.pole_figure_points[di], np.array((dr,))))
             pfi.append(npfi)
         pfi = np.asarray(pfi)
         return pfi[np.argsort(pfi[:,3])]
 
+    def readout_spectrum(self, spectrum):
+        return self.FitSpectrum(spectrum)
+
+    def FitSpectrum(self, spectrum):
+        # can imagine how in mantid implementation this will be a bit jazzier
+        popt, pcov = curve_fit(gaussian, spectrum[:,0], spectrum[:,1],
+                               bounds = ((0, self.q_probe-self.probe_window, 0),
+                                         (2, self.q_probe+self.probe_window, 2)))
+        return popt[0] # return the amplitude of the fit gaussian
+
+def gaussian(x, amplitude, mean, stddev):
+    return amplitude * np.exp(-((x - mean) / 4 / stddev)**2)
