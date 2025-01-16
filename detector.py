@@ -13,6 +13,7 @@ class Detector:
         self.K = None
         self.ki = None
         self.readout = np.zeros(2)
+        self.readout_probe = 0
     def __repr__(self):
         return self.name
     def get_polychromatic_ks(self, rs, ki):
@@ -22,5 +23,5 @@ class Detector:
             pKs.append(roots[roots != 0] * self.K)
         self.pKs = np.asarray(pKs)
         return self.pKs
-    def get_readout(self, ind):
-        return np.log(self.readout[ind] + 1)
+    def get_readout(self):
+        return np.log(self.readout[self.readout_probe] + 1)

@@ -1,4 +1,5 @@
 from PIL.ImageOps import scale
+from helper_funcs import *
 
 
 class Presenter():
@@ -72,12 +73,12 @@ class Presenter():
                                                                                 self.Model.sample_view_axis,
                                                                                 self.Model.pole_figure_points,
                                                                                 self.Model.detector_colors,
-                                                                                self.Model.equator())
+                                                                                equator())
     def plot_pole_figure_intensities(self):
         self.pole_figure_artists += self.View.plot_pole_figure_intensities(self.View.calc_pf_ax,
                                                                                 self.Model.sample_view_axis,
                                                                                 self.Model.pole_figure_intensities,
-                                                                                self.Model.equator())
+                                                                                equator())
     def plot_goniometer(self):
         self.z_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_eq, self.Model.r_dict['gonio_r']),
                          self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_eq[:,:self.Model.goniometer.phi_frac],
@@ -137,12 +138,15 @@ class Presenter():
         self.View.fix_aspect()
 
     def run_experiment(self):
-        self.Model.create_experiment()
         for gonio_pos in self.Model.goniometer.exp_runs:
             self.upon_goniometer_change(*gonio_pos)
             self.Model.exp_data.goniometer_positions.append(gonio_pos)
             self.Model.exp_data.detector_readouts.append([det.readout for det in self.Model.detectors])
         self.Model.exp_data.save_exp()
+
+    def assign_file_name(self, val):
+        self.Model.create_experiment()
+        self.Model.exp_data.name = val
 
     def click_run_exp(self, val):
         self.remove_artist_set(self.pole_figure_artists)
@@ -165,6 +169,7 @@ class Presenter():
                                        self.Model.ewald_radii[1],
                                        self.Model.r_dict['q_probe'])
         self.View.add_run_experiment_button(self.click_run_exp)
+        self.View.add_exp_name_textbox(self.assign_file_name)
 
     def upon_goniometer_change(self, phi, theta, psi):
         self.Model.sample.orient_array = [phi, theta, psi]

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 from model import *
 
-from matplotlib.widgets import Slider, Button
+from matplotlib.widgets import Slider, Button, TextBox
 
 class View():
     def __init__(self):
@@ -185,3 +185,8 @@ class View():
         pos = plt.axes([0.70, 0.09, 0.025, 0.03])
         self.run_butt = Button(pos, 'run')
         self.run_butt.on_clicked(run_exp)
+
+    def add_exp_name_textbox(self, assign_file_name):
+        pos = plt.axes([0.60, 0.09, 0.05, 0.03])
+        self.exp_name_box = TextBox(pos, "exp filename")
+        self.exp_name_box.on_submit(assign_file_name)

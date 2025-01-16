@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 
+from helper_funcs import equator
+
+
 class Goniometer:
     def __init__(self, scale = 1, exp_runs = ()):
         self.z_norm_init = np.array((0,0,1))
@@ -18,12 +21,7 @@ class Goniometer:
         self.exp_runs= exp_runs
 
     def equator(self, r = 1.0, res = 100, offset=(0,0,0)):
-        r = self.scale * r
-        u = np.linspace(0, 2 * np.pi, res)
-        x = r*np.cos(u) + offset[0]
-        y = r*np.sin(u) + offset[1]
-        z = np.zeros_like(x) + offset[2]
-        return np.concatenate((x[None,:],y[None,:],z[None,:]), axis = 0)
+        return equator(r*self.scale, res, offset)
 
     def orient_to_pole(self, eq, view_axis):
         bisect = view_axis + ((np.array((0,0,1)) - view_axis)/2)

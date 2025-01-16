@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
-from model import Model
+from model import Mantex
+from mantex_sim import MantexSim
 from goniometer import Goniometer
 from detector import Detector
 from source import Source
@@ -25,7 +26,7 @@ exp_runs = [(phi, theta, 0) for theta in np.arange(0, 360, 45) for phi in np.ara
 
 goniometer = Goniometer(exp_runs = exp_runs)
 
-model = Model(source,
+model = MantexSim(source,
               [ndet,ndet2, sdet],
               sample,
               goniometer,
