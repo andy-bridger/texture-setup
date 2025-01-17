@@ -18,7 +18,7 @@ ndet2 = Detector([5*np.sqrt(2), 5*np.sqrt(2), 0], 'north2')
 sdet = Detector([0, -10, 0], 'south')
 source = Source([20, 0 , 0])
 
-exp_runs = [(phi, theta, 0) for theta in np.arange(0, 360, 45) for phi in np.arange(0, 360, 45) ]
+exp_runs = [(phi, theta, 0) for theta in np.arange(0, 360, 15) for phi in np.arange(0, 360, 15) ]
 
 goniometer = Goniometer(exp_runs = exp_runs)
 

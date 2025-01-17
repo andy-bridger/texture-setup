@@ -4,7 +4,6 @@ from scipy.spatial.transform import Rotation
 from goniometer import Goniometer
 from detector import Detector
 from source import Source
-from sample import Sample
 from helper_funcs import *
 from experiment import ExperimentalData
 from scipy.stats import norm
@@ -12,14 +11,14 @@ from scipy.optimize import curve_fit
 
 
 class Mantex():
-    def __init__(self, source, detectors, sample, goniometer,
+    def __init__(self, source, detectors, sample_position, goniometer,
                  sample_view_axis, q_probe, probe_window = 0.05):
         self.source = source
         self.detectors = detectors
-        self.sample = sample
+        self.sample_position = sample_position
         self.goniometer = goniometer
         self.sample_view_axis = np.asarray(sample_view_axis)
-        self.ki_raw = self.sample.position - self.source.position
+        self.ki_raw = self.sample_position - self.source.position
         self.ki_raw_scale = np.linalg.norm(self.ki_raw)
         self.ki = self.ki_raw/self.ki_raw_scale
         self.Ks = self.get_Ks()
@@ -29,10 +28,10 @@ class Mantex():
 
     def get_Ks(self):
         norm = lambda x : x/np.linalg.norm(x)
-        ki = norm(self.sample.position - self.source.position)
+        ki = norm(self.sample_position - self.source.position)
         Ks = []
         for det in self.detectors:
-            K = norm(norm(det.position - self.sample.position) - ki)
+            K = norm(norm(det.position - self.sample_position) - ki)
             Ks.append(K)
             det.K = K
         return Ks
@@ -44,7 +43,7 @@ class Mantex():
     def get_pole_K_intercepts(self):
         Gs = []
         for K in self.Ks:
-            roots = sphere_line_intercept(np.zeros(3), K, self.sample.position, 1)
+            roots = sphere_line_intercept(np.zeros(3), K, self.sample_position, 1)
             Gs.append(roots[roots!=0]*K)
         return np.asarray(Gs)
 
