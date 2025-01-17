@@ -14,6 +14,7 @@ class MantexSim(Mantex):
                  sample_view_axis, detector_colors = None, ewald_steps = 2, q_probe = 1):
 
         super().__init__(source, detectors, sample, goniometer, sample_view_axis, q_probe)
+        self.goniometer = goniometer
         self.sample = sample
         self.exp_data = []
         self.r_dict = {'recip_sample': 1,
@@ -136,8 +137,11 @@ class MantexSim(Mantex):
         return source_repr, source_col, det_reprs, det_cols
 
     def get_sample(self, ratio = 0.1):
-        cube = self.get_cube(offset = (0,0, 0), size = self.ewald_radius*np.ones(3)*ratio)
-        return cube
+        if self.sample.primitive:
+            mesh = self.get_cube(offset = (0,0, 0), size = self.ewald_radius*np.ones(3)*ratio)
+        else:
+            mesh = self.sample.mesh
+        return mesh
 
     def create_experiment(self):
         self.exp_data = ExperimentalData(self.detectors)

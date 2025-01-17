@@ -3,34 +3,42 @@ from concurrent.futures.process import ProcessPoolExecutor
 import numpy as np
 
 from model import Mantex
-from goniometer import Goniometer
+from goniometer import Goniometer, GenericStateMatrixProvider
 from experiment import ExperimentalData
+from sample import SampleObject
 import matplotlib.pyplot as plt
 from helper_funcs import *
 from concurrent.futures import ThreadPoolExecutor
-import time
+import copy
 
 
-class GetPoleFigure:
-    def __init__(self, exp_name, source, sample, sample_view_axis = (1,0,0), exp_fp = "./experiments",
-               q_probe = 1, probe_window = 0.05):
-        self.exp_data = ExperimentalData(None, None, from_data= True)
-        self.exp_data.from_data(exp_name, exp_fp)
+class GetSinglePoleFigure:
+    def __init__(self, exp_data, source, sample, sample_view_axis = (1,0,0),
+               q_probe = 1, probe_window = 0.05, ind = 0):
+        self.exp_data = exp_data
         self.sample = sample
+
         self.sample_view_axis = np.asarray(sample_view_axis)
-        self.goniometer_arr = [Goniometer(phi = init_gonio[0], theta = init_gonio[1], psi = init_gonio[2],
-                                     exp_runs=()) for init_gonio in self.exp_data.goniometer_positions]
+        self.smp = exp_data.smps[ind]
+        self.sample.set_smp(self.smp)
 
-        self.mantex_arr = [Mantex(source, self.exp_data.detectors, self.sample,
-                                  goniometer, sample_view_axis,
-                                  q_probe, probe_window) for goniometer in self.goniometer_arr]
+        self.mantex = Mantex(source, self.exp_data.detectors, self.sample,
+                                  self.smp, sample_view_axis,
+                                  q_probe, probe_window)
+        self.spectra = self.exp_data.detector_readouts[ind]
+
     def execute(self):
-        results = map(self.dispatch_pfi_calc, self.mantex_arr, self.exp_data.detector_readouts)
-        self.pole_figure_intensities = np.concatenate([r for r in results], axis = 0)
-        self.pole_figure_intensities = self.pole_figure_intensities[np.argsort(self.pole_figure_intensities[:,-1])]
+        return self.mantex.get_pole_figure_intensities(self.spectra)
 
-    def dispatch_pfi_calc(self, mantex, spectra):
-        return mantex.get_pole_figure_intensities(spectra)
+class GetAllPoleFigures:
+    def __init__(self, exp_data, source, sample, sample_view_axis = (1,0,0),  q_probe = 1, probe_window = 0.05):
+        self.sample_view_axis = np.asarray(sample_view_axis)
+        self.spfs = [GetSinglePoleFigure(exp_data, source, sample, sample_view_axis ,  q_probe , probe_window , ind = i) for i in range(len(exp_data.smps))]
+    def execute(self):
+        pfis = [spf.execute() for spf in self.spfs]
+        pfis = np.concatenate(pfis, axis = 0)
+        self.pole_figure_intensities = pfis[np.argsort(pfis[:,-1])]
+
 
 class PoleFigurePlot:
     def __init__(self):

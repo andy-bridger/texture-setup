@@ -7,8 +7,24 @@ from scipy.spatial.transform import Rotation
 from helper_funcs import *
 
 
-class Goniometer:
+class GenericStateMatrixProvider:
+    def __init__(self, rot_mat, translation):
+        self.rot_mat = rot_mat
+        self.translation = translation
+    def get_rot(self):
+        return self.rot_mat
+    def get_translation(self):
+        return self.translation
+    def to_state_data(self):
+        return np.concatenate((self.rot_mat.reshape((-1)), self.translation))
+    def from_state_data(self, state_data):
+        self.translation = state_data[-3:]
+        self.rot_mat = state_data[:-3].reshape((3,3))
+
+
+class Goniometer(GenericStateMatrixProvider):
     def __init__(self, scale = 1, phi =0,theta=0, psi=0, exp_runs = ()):
+        super().__init__(None, None)
         self.phi = phi
         self.theta = theta
         self.psi = psi
@@ -25,6 +41,7 @@ class Goniometer:
         self.theta_frac = 0
         self.psi_frac = 0
         self.exp_runs= exp_runs
+        self.translation = np.zeros(3)
 
     def equator(self, r = 1.0, res = 100, offset=(0,0,0)):
         return equator(r*self.scale, res, offset)
@@ -47,9 +64,15 @@ class Goniometer:
 
     def update_rot(self):
         self.rot = Rotation.from_euler('ZXZ', (self.phi, self.theta, self.psi), degrees=True)
+        self.rot_mat = self.rot.as_matrix()
 
     def update_angles(self, phi, theta, psi):
         self.phi = phi
         self.theta = theta
         self.psi = psi
         self.update_rot()
+    def get_rot(self):
+        return self.rot_mat
+    def get_translation(self):
+        return self.translation
+

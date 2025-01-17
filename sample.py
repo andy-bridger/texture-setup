@@ -2,17 +2,37 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 
 class SampleObject:
-    def __init__(self, position):
+    def __init__(self, position, smp, mesh = None, mesh_scale = 0.1):
         self.position = np.asarray(position)
+        self.smp = smp
+        self.mesh = mesh
+        self.original_mesh = mesh
+        if type(mesh) != type(None):
+            self.scale_mesh(mesh_scale)
 
-class Sample:
+    def scale_mesh(self, scale):
+        self.mesh.vectors = self.original_mesh.vectors * scale
+        self.scaled_mesh_vectors = self.mesh.vectors.copy()
+
+    def update_mesh(self):
+        self.mesh.vectors = np.array(list(map(Rotation.from_matrix(self.smp.get_rot()).apply, self.scaled_mesh_vectors + self.smp.get_translation())))
+
+    def set_smp(self,smp):
+        self.smp = smp
+
+class Sample(SampleObject):
     def __init__(self, position, goniometer, cell_parameters, q_range,
                  cell_orientations, cell_colors=None, q_probe = 1,
-                 sample_scale = 1):
+                 sample_scale = 1, mesh = None):
         '''
         position: lab frame x,y,z coordiantes
         orientation: sample
         '''
+        super().__init__(position, goniometer, mesh)
+        self.smp = goniometer
+        self.primitive = False
+        if type(self.mesh) == type(None):
+            self.primitive = True
         self.name = 'sample'
         self.position = np.asarray(position)
         self.goniometer = goniometer

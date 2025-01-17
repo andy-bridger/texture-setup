@@ -28,20 +28,32 @@ class Presenter():
                                                                  self.Model.sample.cell_colors,
                                                                  self.Model.sample.rl_alphas)
     def plot_recip_sample(self):
-        self.recip_sample_artist = self.View.plot_cube(self.View.recip_ax,
-                                                       self.Model.get_sample(ratio = 0.05*self.Model.r_dict['recip_sample']),
-                                                       ('red', 'blue', 'green'))
+        if self.Model.sample.primitive:
+            self.recip_sample_artist = self.View.plot_cube(self.View.recip_ax,
+                                                           self.Model.get_sample(ratio = 0.05*self.Model.r_dict['recip_sample']),
+                                                           ('red', 'blue', 'green'))
+        else:
+            # only upon plotting do we want to recalc the mesh
+            self.Model.sample.update_mesh()
+            self.recip_sample_artist = self.View.plot_mesh(self.View.recip_ax, self.Model.sample.mesh, scale = 0.1)
     def plot_ewald_detector_Ks(self):
         self.ewald_detector_vector_artists = self.View.plot_ewald_detector_vectors(self.View.recip_ax,
                                                                              self.Model.pKs[:,self.Model.probe_ind],
                                                                              self.Model.detector_colors)
     def plot_lab_sample(self):
-        self.lab_sample_artist = self.View.plot_cube(self.View.lab_ax,
-                                                     self.Model.get_sample(ratio=2*self.Model.r_dict['lab_sample']),
-                                                     ('red', 'blue', 'green'))
+        if self.Model.sample.primitive:
+            self.lab_sample_artist = self.View.plot_cube(self.View.lab_ax,
+                                                         self.Model.get_sample(ratio=2*self.Model.r_dict['lab_sample']),
+                                                         ('red', 'blue', 'green'))
+        else:
+            # only upon plotting do we want to recalc the mesh
+            self.Model.sample.update_mesh()
+            self.lab_sample_artist = self.View.plot_mesh(self.View.lab_ax, self.Model.sample.mesh)
+
     def update_lab_sample(self):
-        for x in self.lab_sample_artist:
-            x.remove()
+        # only upon plotting do we want to recalc the mesh
+        self.Model.sample.update_mesh()
+        self.remove_artist_set(self.lab_sample_artist)
         self.plot_lab_sample()
 
     def plot_lab_beam_paths(self):
@@ -144,7 +156,7 @@ class Presenter():
     def run_experiment(self):
         for gonio_pos in self.Model.goniometer.exp_runs:
             self.upon_goniometer_change(*gonio_pos)
-            self.Model.exp_data.goniometer_positions.append(gonio_pos)
+            self.Model.exp_data.state_data.append(self.Model.goniometer.to_state_data())
             self.Model.exp_data.detector_readouts.append([det.spectrum for det in self.Model.detectors])
         self.Model.exp_data.save_exp()
 
@@ -225,6 +237,8 @@ class Presenter():
         self.remove_artist_set(self.recip_sample_artist)
         self.Model.r_dict['recip_sample'] = val
         self.Model.r_dict['lab_sample'] = val
+        if not self.Model.sample.primitive:
+            self.Model.sample.scale_mesh(val)
         self.plot_lab_sample()
         self.plot_recip_sample()
         self.View.fix_aspect()
@@ -262,10 +276,13 @@ class Presenter():
         self.plot_ewald_detector_Ks()
 
     def remove_artist_set(self, artists):
-        for a in artists:
-            if type(a) != list:
-                a.remove()
-            else:
-                self.remove_artist_set(a)
+        if type(artists) != list:
+            artists.remove()
+        else:
+            for a in artists:
+                if type(a) != list:
+                    a.remove()
+                else:
+                    self.remove_artist_set(a)
 
 

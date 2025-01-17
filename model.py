@@ -11,13 +11,13 @@ from scipy.optimize import curve_fit
 
 
 class Mantex():
-    def __init__(self, source, detectors, sample, goniometer,
+    def __init__(self, source, detectors, sample, smp,
                  sample_view_axis, q_probe, probe_window = 0.05):
         self.source = source
         self.detectors = detectors
         self.sample_position = sample.position
         self.sample = sample
-        self.goniometer = goniometer
+        self.smp = smp
         self.sample_view_axis = np.asarray(sample_view_axis)
         self.ki_raw = self.sample_position - self.source.position
         self.ki_raw_scale = np.linalg.norm(self.ki_raw)
@@ -50,7 +50,7 @@ class Mantex():
 
     def update_pole_positions(self):
         # Update orientation of the view axis so the detectors positions can remain in lab frame
-        self.pole_view_axis = self.goniometer.rot.apply(self.sample_view_axis)
+        self.pole_view_axis = (self.smp.get_rot()@(self.sample_view_axis.T)).T
         self.north_pole = self.pole_view_axis / np.linalg.norm(self.pole_view_axis)
 
         # Project the K vectors through the equator of the new orientation
@@ -80,7 +80,7 @@ class Mantex():
         self.calc_pole() # calculate the new projections of the detector Ks in lab space
 
         # convert these projections back into sample axes - where the view direction is specified
-        self.pole_figure_points = self.goniometer.rot.apply(self.pole_K_projs, inverse=True)
+        self.pole_figure_points = (np.linalg.inv(self.smp.get_rot())@(self.pole_K_projs.T)).T
 
         # append the readout intensity to the sample space position information
         pfi = []

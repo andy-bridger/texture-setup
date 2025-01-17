@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 from model import *
+from mpl_toolkits import mplot3d
 
 from matplotlib.widgets import Slider, Button, TextBox
 
@@ -80,6 +81,9 @@ class View():
         for i in range(2):  # Left/Right faces
             cube.append(ax.plot_surface(X[:, :, i], Y[:, :, i], Z[:, :, i], alpha=0.5, color=col[2]))
         return cube
+
+    def plot_mesh(self, ax, mesh, scale = 1):
+        return ax.add_collection3d(mplot3d.art3d.Poly3DCollection(mesh.vectors*scale, edgecolor = 'grey', facecolor = 'white'))
 
     def plot_ewald_detector_vectors(self, ax, pole_Ks, detector_colors):
         artists = []
