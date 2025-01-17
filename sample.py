@@ -1,6 +1,10 @@
 import numpy as np
 from scipy.spatial.transform import Rotation
 
+class SampleObject:
+    def __init__(self, position):
+        self.position = np.asarray(position)
+
 class Sample:
     def __init__(self, position, goniometer, cell_parameters, q_range,
                  cell_orientations, cell_colors=None, q_probe = 1,

@@ -11,11 +11,12 @@ from scipy.optimize import curve_fit
 
 
 class Mantex():
-    def __init__(self, source, detectors, sample_position, goniometer,
+    def __init__(self, source, detectors, sample, goniometer,
                  sample_view_axis, q_probe, probe_window = 0.05):
         self.source = source
         self.detectors = detectors
-        self.sample_position = sample_position
+        self.sample_position = sample.position
+        self.sample = sample
         self.goniometer = goniometer
         self.sample_view_axis = np.asarray(sample_view_axis)
         self.ki_raw = self.sample_position - self.source.position

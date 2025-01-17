@@ -12,15 +12,16 @@ import time
 
 
 class GetPoleFigure:
-    def __init__(self, exp_name, source, sample_pos, sample_view_axis = (1,0,0), exp_fp = "./experiments",
+    def __init__(self, exp_name, source, sample, sample_view_axis = (1,0,0), exp_fp = "./experiments",
                q_probe = 1, probe_window = 0.05):
         self.exp_data = ExperimentalData(None, None, from_data= True)
         self.exp_data.from_data(exp_name, exp_fp)
+        self.sample = sample
         self.sample_view_axis = np.asarray(sample_view_axis)
         self.goniometer_arr = [Goniometer(phi = init_gonio[0], theta = init_gonio[1], psi = init_gonio[2],
                                      exp_runs=()) for init_gonio in self.exp_data.goniometer_positions]
 
-        self.mantex_arr = [Mantex(source, self.exp_data.detectors, np.asarray(sample_pos),
+        self.mantex_arr = [Mantex(source, self.exp_data.detectors, self.sample,
                                   goniometer, sample_view_axis,
                                   q_probe, probe_window) for goniometer in self.goniometer_arr]
     def execute(self):

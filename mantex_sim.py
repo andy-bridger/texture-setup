@@ -13,7 +13,7 @@ class MantexSim(Mantex):
     def __init__(self, source, detectors, sample, goniometer, ewald_radii,
                  sample_view_axis, detector_colors = None, ewald_steps = 2, q_probe = 1):
 
-        super().__init__(source, detectors, sample.position, goniometer, sample_view_axis, q_probe)
+        super().__init__(source, detectors, sample, goniometer, sample_view_axis, q_probe)
         self.sample = sample
         self.exp_data = []
         self.r_dict = {'recip_sample': 1,
