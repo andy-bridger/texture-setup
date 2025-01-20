@@ -12,9 +12,9 @@ exp_data.from_data('test')
 
 source = Source([20, 0 , 0])
 sample = SampleObject((0.,0.,0.), GenericStateMatrixProvider(np.eye(3), np.zeros(3)), mesh = mesh.Mesh.from_file("./shapes/utah_teapot.stl"))
-sample_view_axis = (1,0,0)
+sample_view_axes = ((1,0,0), (0,1,0))
 
-alg = GetAllPoleFigures(exp_data, source, sample, sample_view_axis)
+alg = GetAllPoleFigures(exp_data, source, sample, sample_view_axes)
 
 ## TODO:
 # Fix mesh scale and movement system. The mesh position should be described using a SMP relative to the centre of the gauge volume at sample_position.

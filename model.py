@@ -12,13 +12,16 @@ from scipy.optimize import curve_fit
 
 class Mantex():
     def __init__(self, source, detectors, sample, smp,
-                 sample_view_axis, q_probe, probe_window = 0.05):
+                 sample_view_axes, q_probe, probe_window = 0.05):
         self.source = source
         self.detectors = detectors
         self.sample_position = sample.position
         self.sample = sample
         self.smp = smp
-        self.sample_view_axis = np.asarray(sample_view_axis)
+        self.sample_view_axes = np.asarray(sample_view_axes)
+        self.sample_view_axis = np.cross(sample_view_axes[0], sample_view_axes[1])
+        self.sample_view_mat = np.concatenate((self.sample_view_axes, self.sample_view_axis[None, :]), axis = 0).T
+        print("sample_view_mat = ", self.sample_view_mat, self.sample_view_mat[:,2])
         self.ki_raw = self.sample_position - self.source.position
         self.ki_raw_scale = np.linalg.norm(self.ki_raw)
         self.ki = self.ki_raw/self.ki_raw_scale
@@ -50,37 +53,39 @@ class Mantex():
 
     def update_pole_positions(self):
         # Update orientation of the view axis so the detectors positions can remain in lab frame
-        self.pole_view_axis = (self.smp.get_rot()@(self.sample_view_axis.T)).T
-        self.north_pole = self.pole_view_axis / np.linalg.norm(self.pole_view_axis)
+        self.pole_view_mat = (self.smp.get_rot()@(self.sample_view_mat))
+        self.to_pole_view = np.linalg.inv(self.pole_view_mat)
 
         # Project the K vectors through the equator of the new orientation
-        self.pole_K_projs = np.asarray([self.get_orientated_stereographic_projection(pK) for pK in self.pole_Ks])
+        pK_projs = []
+        pK_sters = []
+        for pK in self.pole_Ks:
+            pK_proj, pK_ster =  self.get_orientated_stereographic_projection(pK)
+            pK_projs.append(pK_proj)
+            pK_sters.append(pK_ster)
+        self.pole_K_projs = np.asarray(pK_projs)
+        self.pole_figure_points = np.asarray(pK_sters)
 
     def get_orientated_stereographic_projection(self, point):
         # easiest to do this calc with the equator at z = 0
         # so rotate the entire lab frame such that the pole view direction is parallel to (0,0,1)
 
         # the specific rotation itself doesn't matter as we will invert it afterwards
-        rot = get_rot_to_orient_pole_to_z(self.north_pole)
-        spoint = rot.apply(point)
-
+        spoint = (self.to_pole_view@point)
         # we want the vector to whichever pole is on the opposite hemisphere
         oppo_pole = np.array((0,0,-np.sign(spoint[2])))
         svec = spoint - oppo_pole
 
         if spoint[2] == 0: # point is within the projection plane
-            return point
+            return point, spoint
         else:
             u = -oppo_pole[2]/svec[2]
             proj_point = (u*svec) + oppo_pole
-            return rot.apply(proj_point, inverse=True)
+            return (self.pole_view_mat@proj_point), proj_point
 
 
     def get_pole_figure_intensities(self, spectra):
         self.calc_pole() # calculate the new projections of the detector Ks in lab space
-
-        # convert these projections back into sample axes - where the view direction is specified
-        self.pole_figure_points = (np.linalg.inv(self.smp.get_rot())@(self.pole_K_projs.T)).T
 
         # append the readout intensity to the sample space position information
         pfi = []

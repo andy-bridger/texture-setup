@@ -35,7 +35,7 @@ model = MantexSim(source,
               sample,
               goniometer,
               (0.7, 1.4),
-              (1,0,0),
+                  ((0,0,1), (0,1,0)),
               detector_colors=('red','green', 'blue'), ewald_steps=100)
 
 view = View()

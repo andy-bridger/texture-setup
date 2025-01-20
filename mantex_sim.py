@@ -11,9 +11,9 @@ from model import Mantex
 
 class MantexSim(Mantex):
     def __init__(self, source, detectors, sample, goniometer, ewald_radii,
-                 sample_view_axis, detector_colors = None, ewald_steps = 2, q_probe = 1):
+                 sample_view_axes, detector_colors = None, ewald_steps = 2, q_probe = 1):
 
-        super().__init__(source, detectors, sample, goniometer, sample_view_axis, q_probe)
+        super().__init__(source, detectors, sample, goniometer, sample_view_axes, q_probe)
         self.goniometer = goniometer
         self.sample = sample
         self.exp_data = []

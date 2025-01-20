@@ -100,28 +100,16 @@ class View():
                       arrow_length_ratio = 0.05, color = detector_colors[i]))
         return artists
 
-    def plot_pole_figure_position(self, ax, sample_view_axis, pole_figure_points, detector_colors, eq):
+    def plot_pole_figure_position(self, ax, pole_figure_points, detector_colors, eq):
         artists = []
-        if np.where(sample_view_axis ==1)[0] == 0:
-            artists.append(ax.scatter(pole_figure_points[:,1], pole_figure_points[:,2], c = detector_colors))
-        if np.where(sample_view_axis ==1)[0] == 1:
-            artists.append(ax.scatter(pole_figure_points[:,0], pole_figure_points[:,2], c = detector_colors))
-        if np.where(sample_view_axis ==1)[0] == 2:
-            artists.append(ax.scatter(pole_figure_points[:,0], pole_figure_points[:,1], c = detector_colors))
+        artists.append(ax.scatter(pole_figure_points[:,0], pole_figure_points[:,1], c = detector_colors))
         artists.append(ax.plot(eq[0], eq[1], c='grey'))
         return artists
 
-    def plot_pole_figure_intensities(self, ax, sample_view_axis, pole_figure_intensities, eq):
+    def plot_pole_figure_intensities(self, ax, pole_figure_intensities, eq):
         artists = []
-        if np.where(sample_view_axis ==1)[0] == 0:
-            artists.append(ax.scatter(pole_figure_intensities[:,1], pole_figure_intensities[:,2],
-                                c = pole_figure_intensities[:,3]))
-        if np.where(sample_view_axis ==1)[0] == 1:
-            artists.append(ax.scatter(pole_figure_intensities[:,0], pole_figure_intensities[:,2],
-                                c = pole_figure_intensities[:,3]))
-        if np.where(sample_view_axis ==1)[0] == 2:
-            artists.append(ax.scatter(pole_figure_intensities[:,0], pole_figure_intensities[:,1],
-                                c = pole_figure_intensities[:,3]))
+        artists.append(ax.scatter(pole_figure_intensities[:,0], pole_figure_intensities[:,1],
+                            c = pole_figure_intensities[:,3]))
         #eq = self.equator()
         artists.append(ax.plot(eq[0], eq[1], c = 'grey'))
         return artists

@@ -76,21 +76,18 @@ class Presenter():
     def plot_pole_sphere(self):
         self.pole_sphere_artist = self.View.plot_sphere(self.View.recip_ax, self.Model.pole_cart_array)
         self.pole_sphere_eq_artist = self.View.plot_line(self.View.recip_ax,
-                                                         orient_to_pole(equator(r=1),
-                                                                        self.Model.pole_view_axis))
+                                                         self.Model.pole_view_mat@equator(r=1))
         self.pole_sphere_vector_artists = self.View.plot_pole_figure_vectors(self.View.recip_ax,
                                                                              self.Model.pole_Ks,
                                                                              self.Model.detector_colors,
                                                                              self.Model.pole_K_projs_vec)
     def plot_pole_figure_detectors(self):
         self.pole_figure_detector_artists = self.View.plot_pole_figure_position(self.View.pole_proj_ax,
-                                                                                self.Model.sample_view_axis,
                                                                                 self.Model.pole_figure_points,
                                                                                 self.Model.detector_colors,
                                                                                 equator())
     def plot_pole_figure_intensities(self):
         self.pole_figure_artists += self.View.plot_pole_figure_intensities(self.View.calc_pf_ax,
-                                                                                self.Model.sample_view_axis,
                                                                                 self.Model.pole_figure_intensities,
                                                                                 equator())
     def plot_goniometer(self):

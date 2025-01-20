@@ -13,17 +13,17 @@ import copy
 
 
 class GetSinglePoleFigure:
-    def __init__(self, exp_data, source, sample, sample_view_axis = (1,0,0),
+    def __init__(self, exp_data, source, sample, sample_view_axes = ((1,0,0), (0,1,0)),
                q_probe = 1, probe_window = 0.05, ind = 0):
         self.exp_data = exp_data
         self.sample = sample
 
-        self.sample_view_axis = np.asarray(sample_view_axis)
+        self.sample_view_axes = np.asarray(sample_view_axes)
         self.smp = exp_data.smps[ind]
         self.sample.set_smp(self.smp)
 
         self.mantex = Mantex(source, self.exp_data.detectors, self.sample,
-                                  self.smp, sample_view_axis,
+                                  self.smp, sample_view_axes,
                                   q_probe, probe_window)
         self.spectra = self.exp_data.detector_readouts[ind]
 
