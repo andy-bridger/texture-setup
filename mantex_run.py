@@ -51,16 +51,9 @@ class PoleFigurePlot:
     def fix_aspect(self, ax):
         ax.set_aspect('equal')
 
-    def plot_pole_figure(self, ax, sample_view_axis, pole_figure_intensities, eq):
+    def plot_pole_figure(self, ax, pole_figure_intensities, eq):
         artists = []
-        if np.where(sample_view_axis == 1)[0] == 0:
-            artists.append(ax.scatter(pole_figure_intensities[:, 1], pole_figure_intensities[:, 2],
-                                      c=pole_figure_intensities[:, 3]))
-        if np.where(sample_view_axis == 1)[0] == 1:
-            artists.append(ax.scatter(pole_figure_intensities[:, 0], pole_figure_intensities[:, 2],
-                                      c=pole_figure_intensities[:, 3]))
-        if np.where(sample_view_axis == 1)[0] == 2:
-            artists.append(ax.scatter(pole_figure_intensities[:, 0], pole_figure_intensities[:, 1],
+        artists.append(ax.scatter(pole_figure_intensities[:, 0], pole_figure_intensities[:, 1],
                                       c=pole_figure_intensities[:, 3]))
         artists.append(ax.plot(eq[0], eq[1], c='grey'))
         return artists
@@ -74,7 +67,7 @@ class PoleFigurePresenter:
     def plot_pole_figure(self):
         self.init_view()
         self.Model.execute()
-        self.View.plot_pole_figure(self.View.ax, self.Model.sample_view_axis, self.Model.pole_figure_intensities, equator())
+        self.View.plot_pole_figure(self.View.ax, self.Model.pole_figure_intensities, equator())
         self.View.fix_aspect(self.View.ax)
 
 

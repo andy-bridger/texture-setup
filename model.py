@@ -21,7 +21,6 @@ class Mantex():
         self.sample_view_axes = np.asarray(sample_view_axes)
         self.sample_view_axis = np.cross(sample_view_axes[0], sample_view_axes[1])
         self.sample_view_mat = np.concatenate((self.sample_view_axes, self.sample_view_axis[None, :]), axis = 0).T
-        print("sample_view_mat = ", self.sample_view_mat, self.sample_view_mat[:,2])
         self.ki_raw = self.sample_position - self.source.position
         self.ki_raw_scale = np.linalg.norm(self.ki_raw)
         self.ki = self.ki_raw/self.ki_raw_scale
