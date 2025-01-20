@@ -95,9 +95,12 @@ class MantexSim(Mantex):
             q_space_readouts.append(relevant_dists.sum(axis = (1,2)))
         q_space_readouts = np.asarray(q_space_readouts)
 
-        self.detector_readout = q_space_readouts.T
+        self.detector_readout = []
         for idet, det in enumerate(self.detectors):
-            det.spectrum = np.concatenate((self.q_range[:,None], self.detector_readout[idet][:,None]),
+            ipl, entry_point, exit_point = self.sample.get_internal_path_length(self.ki, det.position)
+            scaled_det_r = (q_space_readouts[:,idet]/ipl)
+            self.detector_readout.append(scaled_det_r)
+            det.spectrum = np.concatenate((self.q_range[:,None], scaled_det_r[:,None]),
                                           axis =1)
 
     def get_inplane_pole_figure(self):

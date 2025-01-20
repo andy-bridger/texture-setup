@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation
+import alphashape
 
 class SampleObject:
     def __init__(self, position, smp, mesh = None, mesh_scale = 0.1):
@@ -12,6 +13,15 @@ class SampleObject:
     def get_mesh_vectors(self, scale = 1):
         return np.array(list(
             map(Rotation.from_matrix(self.smp.get_rot()).apply, (self.original_mesh_vectors.copy()+ self.smp.get_translation()) * self.scale * scale)))
+
+    def get_internal_path_length(self, ki, kd):
+        # assume the beam is incident on 0,0,0
+        mv = self.get_mesh_vectors()[:,0,:]
+        mv_norm = mv/np.linalg.norm(mv, axis = 1)[:,None]
+        vert_ki = np.argmax(np.dot(-ki, mv_norm.T)) #closest point to perfect alignment with ki
+        vert_kd = np.argmax(np.dot(kd, mv_norm.T))  # closest point to perfect alignment with kd
+        p_ki, p_kd = mv[vert_ki], mv[vert_kd]
+        return np.linalg.norm(p_ki) + np.linalg.norm(p_kd), p_ki, p_kd
 
     def set_smp(self,smp):
         self.smp = smp

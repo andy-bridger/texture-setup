@@ -88,15 +88,20 @@ class Mantex():
 
         # append the readout intensity to the sample space position information
         pfi = []
-        for di in range(len(self.detectors)):#just read the probe channel for now
-            dr = self.readout_spectrum(spectra[di])
+        for di, det in enumerate(self.detectors):
+            dr = self.readout_spectrum(spectra[di], det)
             npfi = np.concatenate((self.pole_figure_points[di], np.array((dr,))))
             pfi.append(npfi)
         pfi = np.asarray(pfi)
         return pfi[np.argsort(pfi[:,3])]
 
-    def readout_spectrum(self, spectrum):
-        return self.FitSpectrum(spectrum)
+    def readout_spectrum(self, spectrum, det):
+        return self.FitSpectrum(self.correct_spectrum_for_attenuation(spectrum, det))
+
+    def correct_spectrum_for_attenuation(self, spectrum, det):
+        ipl, entry_point, exit_point = self.sample.get_internal_path_length(self.ki, det.position)
+        spectrum[:,1] *= ipl
+        return spectrum
 
     def FitSpectrum(self, spectrum):
         # can imagine how in mantid implementation this will be a bit jazzier
