@@ -23,7 +23,7 @@ class GenericStateMatrixProvider:
 
 
 class Goniometer(GenericStateMatrixProvider):
-    def __init__(self, scale = 1, phi =0,theta=0, psi=0, exp_runs = ()):
+    def __init__(self, scale = 1, phi =0,theta=0, psi=0, exp_runs = (), offset = np.zeros(3)):
         super().__init__(None, None)
         self.phi = phi
         self.theta = theta
@@ -41,7 +41,7 @@ class Goniometer(GenericStateMatrixProvider):
         self.theta_frac = 0
         self.psi_frac = 0
         self.exp_runs= exp_runs
-        self.translation = np.zeros(3)
+        self.translation = offset
 
     def equator(self, r = 1.0, res = 100, offset=(0,0,0)):
         return equator(r*self.scale, res, offset)

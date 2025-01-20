@@ -6,17 +6,12 @@ class SampleObject:
         self.position = np.asarray(position)
         self.smp = smp
         self.mesh = mesh
-        self.original_mesh = mesh
-        if type(mesh) != type(None):
-            self.scale_mesh(mesh_scale)
+        self.original_mesh_vectors = mesh.vectors
+        self.scale = mesh_scale
 
-    ## need to fix the mesh scale etc
-    def scale_mesh(self, scale):
-        self.mesh.vectors = self.original_mesh.vectors * scale
-        self.scaled_mesh_vectors = self.mesh.vectors.copy()
-
-    def update_mesh(self):
-        self.mesh.vectors = np.array(list(map(Rotation.from_matrix(self.smp.get_rot()).apply, self.scaled_mesh_vectors + self.smp.get_translation())))
+    def get_mesh_vectors(self, scale = 1):
+        return np.array(list(
+            map(Rotation.from_matrix(self.smp.get_rot()).apply, (self.original_mesh_vectors.copy()+ self.smp.get_translation()) * self.scale * scale)))
 
     def set_smp(self,smp):
         self.smp = smp

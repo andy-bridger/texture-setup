@@ -82,8 +82,8 @@ class View():
             cube.append(ax.plot_surface(X[:, :, i], Y[:, :, i], Z[:, :, i], alpha=0.5, color=col[2]))
         return cube
 
-    def plot_mesh(self, ax, mesh, scale = 1):
-        return ax.add_collection3d(mplot3d.art3d.Poly3DCollection(mesh.vectors*scale, edgecolor = 'grey', facecolor = 'white'))
+    def plot_mesh(self, ax, mesh_vecs):
+        return ax.add_collection3d(mplot3d.art3d.Poly3DCollection(mesh_vecs, edgecolor = 'grey', facecolor = 'white', lw = 0.1))
 
     def plot_ewald_detector_vectors(self, ax, pole_Ks, detector_colors):
         artists = []
@@ -162,7 +162,7 @@ class View():
         self.lab_k_vec_slider.on_changed(update_lab_k)
     def add_sample_scale_widget(self, update_sample_scale):
         pos = plt.axes([0.85, 0.05, 0.025, 0.03])
-        self.sample_slider = Slider(pos, 'Sample scale', 0.1, 3, valinit=1.0, valstep = 0.1)
+        self.sample_slider = Slider(pos, 'Sample scale', 0.00, 1, valinit=0.1, valstep = 0.05)
         self.sample_slider.on_changed(update_sample_scale)
     def add_gonio_ring_scale_widget(self, update_gr_scale):
         pos = plt.axes([0.85, 0.01, 0.025, 0.03])

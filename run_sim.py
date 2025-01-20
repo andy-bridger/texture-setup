@@ -22,7 +22,7 @@ source = Source([20, 0 , 0])
 
 exp_runs = [(phi, theta, 0) for theta in np.arange(0, 360, 45) for phi in np.arange(0, 360, 45) ]
 
-goniometer = Goniometer(exp_runs = exp_runs)
+goniometer = Goniometer(exp_runs = exp_runs, offset=np.array((0,0,-5)))
 
 sample = Sample([0,0,0], goniometer,
                 (1,1,1), 2,

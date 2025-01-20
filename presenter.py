@@ -33,9 +33,8 @@ class Presenter():
                                                            self.Model.get_sample(ratio = 0.05*self.Model.r_dict['recip_sample']),
                                                            ('red', 'blue', 'green'))
         else:
-            # only upon plotting do we want to recalc the mesh
-            self.Model.sample.update_mesh()
-            self.recip_sample_artist = self.View.plot_mesh(self.View.recip_ax, self.Model.sample.mesh, scale = 0.1)
+            self.recip_sample_artist = self.View.plot_mesh(self.View.recip_ax, self.Model.sample.get_mesh_vectors(scale = 0.1))
+
     def plot_ewald_detector_Ks(self):
         self.ewald_detector_vector_artists = self.View.plot_ewald_detector_vectors(self.View.recip_ax,
                                                                              self.Model.pKs[:,self.Model.probe_ind],
@@ -47,12 +46,9 @@ class Presenter():
                                                          ('red', 'blue', 'green'))
         else:
             # only upon plotting do we want to recalc the mesh
-            self.Model.sample.update_mesh()
-            self.lab_sample_artist = self.View.plot_mesh(self.View.lab_ax, self.Model.sample.mesh)
+            self.lab_sample_artist = self.View.plot_mesh(self.View.lab_ax, self.Model.sample.get_mesh_vectors())
 
     def update_lab_sample(self):
-        # only upon plotting do we want to recalc the mesh
-        self.Model.sample.update_mesh()
         self.remove_artist_set(self.lab_sample_artist)
         self.plot_lab_sample()
 
@@ -235,7 +231,7 @@ class Presenter():
         self.Model.r_dict['recip_sample'] = val
         self.Model.r_dict['lab_sample'] = val
         if not self.Model.sample.primitive:
-            self.Model.sample.scale_mesh(val)
+            self.Model.sample.scale = val
         self.plot_lab_sample()
         self.plot_recip_sample()
         self.View.fix_aspect()
