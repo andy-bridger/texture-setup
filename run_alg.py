@@ -15,6 +15,12 @@ sample = SampleObject((0.,0.,0.), GenericStateMatrixProvider(np.eye(3), np.zeros
 sample_view_axis = (1,0,0)
 
 alg = GetAllPoleFigures(exp_data, source, sample, sample_view_axis)
+
+## TODO:
+# Fix mesh scale and movement system. The mesh position should be described using a SMP relative to the centre of the gauge volume at sample_position.
+# add a proof of concept attenuation system so the intensity is somewhat related to the mesh
+# this will probably just be  
+
 view = PoleFigurePlot()
 presenter = PoleFigurePresenter(alg, view)
 

@@ -10,6 +10,7 @@ class SampleObject:
         if type(mesh) != type(None):
             self.scale_mesh(mesh_scale)
 
+    ## need to fix the mesh scale etc
     def scale_mesh(self, scale):
         self.mesh.vectors = self.original_mesh.vectors * scale
         self.scaled_mesh_vectors = self.mesh.vectors.copy()
