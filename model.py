@@ -51,9 +51,20 @@ class Mantex():
         return np.asarray(Gs)
 
     def update_pole_positions(self):
-        # Update orientation of the view axis so the detectors positions can remain in lab frame
+        # for calculating the pole figure and doing the stereographic projection, we want to map the desired inplane view axes
+        # U and V, onto (1,0,0) and (0,1,0). This transformation can then be applied to all the K vectors and the projection
+        # becomes straightforward as the north/south pole is (0,0 +/-1). The in plane projection can just be read off when the line
+        # between the reprojected K and the pole crosses z = 0.
+
+        # To find the mapping we need to know what U and V are, within the lab frame (this way we can use our instrument coordinates straight away)
+        # so we apply the State Matrix Providers rotation to our sample view matrix (vectors U, V and W) to get U', V', and W' I guess.
+        # to find the transformation of these onto (1,0,0) and (0,1,0) is then conveniently just the inverse of this matrix.
+        # This is because matrix multiplication is really just mapping points to other points and the inverse maps to the identity matrix.
+
+
         self.pole_view_mat = (self.smp.get_rot()@(self.sample_view_mat))
         self.to_pole_view = np.linalg.inv(self.pole_view_mat)
+
 
         # Project the K vectors through the equator of the new orientation
         pK_projs = []
@@ -66,10 +77,7 @@ class Mantex():
         self.pole_figure_points = np.asarray(pK_sters)
 
     def get_orientated_stereographic_projection(self, point):
-        # easiest to do this calc with the equator at z = 0
-        # so rotate the entire lab frame such that the pole view direction is parallel to (0,0,1)
-
-        # the specific rotation itself doesn't matter as we will invert it afterwards
+        # as mentioned before, we want to use our to_pole_view to reproject the points
         spoint = (self.to_pole_view@point)
         # we want the vector to whichever pole is on the opposite hemisphere
         oppo_pole = np.array((0,0,-np.sign(spoint[2])))
@@ -84,7 +92,7 @@ class Mantex():
 
 
     def get_pole_figure_intensities(self, spectra):
-        self.calc_pole() # calculate the new projections of the detector Ks in lab space
+        self.calc_pole() # calculate the new projections of the detector Ks
 
         # append the readout intensity to the sample space position information
         pfi = []

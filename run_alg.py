@@ -16,11 +16,6 @@ sample_view_axes = ((0,0,1), (0,1,0))
 
 alg = GetAllPoleFigures(exp_data, source, sample, sample_view_axes)
 
-## TODO:
-# Fix mesh scale and movement system. The mesh position should be described using a SMP relative to the centre of the gauge volume at sample_position.
-# add a proof of concept attenuation system so the intensity is somewhat related to the mesh
-# this will probably just be some sort of path length thing
-
 view = PoleFigurePlot()
 presenter = PoleFigurePresenter(alg, view)
 
