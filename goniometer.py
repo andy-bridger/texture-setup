@@ -23,8 +23,9 @@ class GenericStateMatrixProvider:
 
 
 class Goniometer(GenericStateMatrixProvider):
-    def __init__(self, scale = 1, phi =0,theta=0, psi=0, exp_runs = (), offset = np.zeros(3)):
+    def __init__(self, scale = 1, phi =0,theta=0, psi=0, exp_runs = (), offset = np.zeros(3), scheme = 'euler'):
         super().__init__(None, None)
+        self.scheme = scheme
         self.phi = phi
         self.theta = theta
         self.psi = psi
@@ -37,9 +38,7 @@ class Goniometer(GenericStateMatrixProvider):
         self.z_prime_norm = np.array((0,0,1))
         self.scale = scale
         self.update_equators()
-        self.phi_frac = 0
-        self.theta_frac = 0
-        self.psi_frac = 0
+        self.update_fracs()
         self.exp_runs= exp_runs
         self.translation = offset
 
@@ -63,8 +62,15 @@ class Goniometer(GenericStateMatrixProvider):
         self.psi_frac = int((self.psi/360)*self.z_prime_eq.shape[1])
 
     def update_rot(self):
-        self.rot = Rotation.from_euler('ZXZ', (self.phi, self.theta, self.psi), degrees=True)
-        self.rot_mat = self.rot.as_matrix()
+        if self.scheme == 'euler':
+            self.rot = Rotation.from_euler('ZXZ', (self.phi, self.theta, self.psi), degrees=True)
+            self.rot_mat = self.rot.as_matrix()
+        else:
+            init_rot = Rotation.from_euler('yz', (self.phi, self.theta), degrees=True)
+            final_rotvec = init_rot.apply(np.array((0,0,1)))*(self.psi/360)
+            second_rot = Rotation.from_rotvec(final_rotvec, degrees=False)
+            self.rot_mat = second_rot.as_matrix()@init_rot.as_matrix()
+            self.rot = Rotation.from_matrix(self.rot_mat)
 
     def update_angles(self, phi, theta, psi):
         self.phi = phi

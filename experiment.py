@@ -4,13 +4,13 @@ from detector import Detector
 from goniometer import GenericStateMatrixProvider
 
 class ExperimentalData:
-    def __init__(self, detectors, name = 'test', from_data = False):
+    def __init__(self, detectors, name = 'test', from_data = False, smp = ()):
         if from_data == False:
             self.state_data = []
             self.detectors = detectors
             self.detector_readouts = []
             self.name = name
-            self.smps = ()
+            self.smps = smp
         else:
             pass
 
