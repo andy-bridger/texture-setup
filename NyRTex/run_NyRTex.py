@@ -37,7 +37,7 @@ drs = [np.moveaxis(np.concatenate((np.load(f"{det_r_dir}/ENOR00{run}.npy").sum(a
 
 exp_data = ExperimentalData(detectors, 'Cu_bolt', from_data= False)
 exp_data.detector_readouts = drs
-exp_data.smps = [Goniometer(1, int(ang[1]), int(ang[1]) ,int(ang[2]), scheme = 'rot1' ) for ang in angs]
+exp_data.smps = [Goniometer(1, int(ang[0]), int(ang[1]) ,int(ang[2]), scheme = 'rot1' ) for ang in angs]
 
 source = Source(np.load(f"{info_dir}/source_pos.npy"))
 sample = SampleObject((0.,0.,0.), GenericStateMatrixProvider(np.eye(3), np.zeros(3)), mesh = mesh.Mesh.from_file(f"{info_dir}/mesh.stl"))

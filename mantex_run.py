@@ -31,9 +31,9 @@ class GetSinglePoleFigure:
         return self.mantex.get_pole_figure_intensities(self.spectra)
 
 class GetAllPoleFigures:
-    def __init__(self, exp_data, source, sample, sample_view_axis = (1,0,0),  q_probe = 1, probe_window = 0.05):
-        self.sample_view_axis = np.asarray(sample_view_axis)
-        self.spfs = [GetSinglePoleFigure(exp_data, source, sample, sample_view_axis ,  q_probe , probe_window , ind = i) for i in range(len(exp_data.smps))]
+    def __init__(self, exp_data, source, sample, sample_view_axes = ((1,0,0),(0,1,0)),  q_probe = 1, probe_window = 0.05):
+        self.sample_view_axes = np.asarray(sample_view_axes)
+        self.spfs = [GetSinglePoleFigure(exp_data, source, sample, sample_view_axes ,  q_probe , probe_window , ind = i) for i in range(len(exp_data.smps))]
     def execute(self):
         pfis = [spf.execute() for spf in self.spfs]
         pfis = np.concatenate(pfis, axis = 0)

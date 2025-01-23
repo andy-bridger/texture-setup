@@ -87,27 +87,27 @@ class Presenter():
                                                                                 self.Model.pole_figure_intensities,
                                                                                 equator())
     def plot_goniometer(self):
-        self.z_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_eq, self.Model.r_dict['gonio_r']),
-                         self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_eq[:,:self.Model.goniometer.phi_frac],
+        self.z_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.ax1_eq, self.Model.r_dict['gonio_r']),
+                         self.View.plot_line(self.View.lab_ax, self.Model.goniometer.ax1_eq[:,:self.Model.goniometer.phi_frac],
                                              self.Model.r_dict['gonio_r'], 'red'),
                          self.View.plot_goniometer_axis(self.View.lab_ax, 'Z',
                                                         self.Model.sample.position,
-                                                        self.Model.goniometer.z_norm,
+                                                        self.Model.goniometer.ax1,
                                                         self.Model.r_dict['gonio_v'])]
-        self.xp_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.x_prime_eq, self.Model.r_dict['gonio_r']),
+        self.xp_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.ax2_eq, self.Model.r_dict['gonio_r']),
                           self.View.plot_line(self.View.lab_ax,
-                                              self.Model.goniometer.x_prime_eq[:, :self.Model.goniometer.theta_frac],
+                                              self.Model.goniometer.ax2_eq[:, :self.Model.goniometer.theta_frac],
                                               self.Model.r_dict['gonio_r'], 'blue'),
                          self.View.plot_goniometer_axis(self.View.lab_ax, "X'",
                                                         self.Model.sample.position,
-                                                        self.Model.goniometer.x_prime_norm,
+                                                        self.Model.goniometer.ax2,
                                                         self.Model.r_dict['gonio_v'])]
-        self.zp_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_prime_eq, self.Model.r_dict['gonio_r']),
-                         self.View.plot_line(self.View.lab_ax, self.Model.goniometer.z_prime_eq[:, :self.Model.goniometer.psi_frac],
+        self.zp_artist = [self.View.plot_line(self.View.lab_ax, self.Model.goniometer.ax3_eq, self.Model.r_dict['gonio_r']),
+                         self.View.plot_line(self.View.lab_ax, self.Model.goniometer.ax3_eq[:, :self.Model.goniometer.psi_frac],
                                 self.Model.r_dict['gonio_r'], 'green'),
                          self.View.plot_goniometer_axis(self.View.lab_ax, "Z'",
                                                         self.Model.sample.position,
-                                                        self.Model.goniometer.z_prime_norm,
+                                                        self.Model.goniometer.ax3,
                                                         self.Model.r_dict['gonio_v'])]
 
     def plot_readouts(self):
@@ -160,6 +160,7 @@ class Presenter():
     def click_run_exp(self, val):
         self.remove_artist_set(self.pole_figure_artists)
         self.pole_figure_artists = []
+        self.Model.reset_pole_figure()
         self.run_experiment()
         self.plot_pole_figure_intensities()
         self.View.fix_aspect()
