@@ -11,12 +11,12 @@ from model import Mantex
 
 class MantexSim(Mantex):
     def __init__(self, source, detectors, sample, goniometer, ewald_radii,
-                 sample_view_axes, detector_colors = None, ewald_steps = 2, q_probe = 1):
+                 sample_view_axes, detector_colors = None, ewald_steps = 2, q_probe = 1, probe_window = 0.05, exp_data = ()):
 
-        super().__init__(source, detectors, sample, goniometer, sample_view_axes, q_probe)
+        super().__init__(source, detectors, sample, goniometer, sample_view_axes, q_probe, probe_window)
         self.goniometer = goniometer
         self.sample = sample
-        self.exp_data = []
+        self.exp_data = exp_data
         self.r_dict = {'recip_sample': 1,
                                    'lab_sample': 1,
                                    'k_vecs': 1,

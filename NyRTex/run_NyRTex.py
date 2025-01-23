@@ -6,6 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
 from mantex_run import GetAllPoleFigures, PoleFigurePlot, PoleFigurePresenter
+from model import Mantex
 from source import Source
 from sample import Sample, SampleObject
 from goniometer import GenericStateMatrixProvider, Goniometer
@@ -14,6 +15,9 @@ import matplotlib.pyplot as plt
 from experiment import ExperimentalData
 from detector import Detector
 from stl import mesh
+from view_NyRTex import NyrtexView
+from presenter_NyRTex import NyrtexPresenter
+from model_NyRTex import NyrtexMantex
 
 info_dir = r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_info"
 det_r_dir = r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_Forbes_npy"
@@ -32,8 +36,8 @@ with open(f"{info_dir}/runs_pA.txt", 'r') as f:
 with open(f"{info_dir}/rotation_pA.txt", 'r') as f:
     angs = [x.rstrip('\n').split('\t') for x in f.readlines()]
 
-drs = [np.moveaxis(np.concatenate((np.load(f"{det_r_dir}/ENOR00{run}.npy").sum(axis = 1)[:,None,:],
-                                   np.load(f"{det_r_dir}/ESUR00{run}.npy").sum(axis = 1)[:,None,:]), axis = 1), 1,0) for run in runs]
+drs = np.asarray([np.moveaxis(np.concatenate((np.load(f"{det_r_dir}/ENOR00{run}.npy").sum(axis = 1)[:,None,:],
+                                   np.load(f"{det_r_dir}/ESUR00{run}.npy").sum(axis = 1)[:,None,:]), axis = 1), 1,0) for run in runs])
 
 exp_data = ExperimentalData(detectors, 'Cu_bolt', from_data= False)
 exp_data.detector_readouts = drs
@@ -47,7 +51,16 @@ sample_view_axes = ((1,0,0), (0,1,0))
 alg = GetAllPoleFigures(exp_data, source, sample, sample_view_axes)
 
 view = PoleFigurePlot()
-presenter = PoleFigurePresenter(alg, view)
+dispatcher = PoleFigurePresenter(alg, view)
 
-presenter.plot_pole_figure()
+dispatcher.plot_pole_figure()
+plt.show()
+
+
+nview = NyrtexView()
+mantex = NyrtexMantex(view.ax, source, detectors, sample,
+                                  exp_data, sample_view_axes, ['red', 'blue'])
+presenter = NyrtexPresenter(mantex, nview)
+
+presenter.plot_all()
 plt.show()

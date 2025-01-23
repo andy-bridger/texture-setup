@@ -9,6 +9,7 @@ class SampleObject:
         self.mesh = mesh
         self.original_mesh_vectors = mesh.vectors
         self.scale = mesh_scale
+        self.primitive = False
 
     def get_mesh_vectors(self, scale = 1):
         return np.array(list(
@@ -36,7 +37,6 @@ class Sample(SampleObject):
         '''
         super().__init__(position, goniometer, mesh)
         self.smp = goniometer
-        self.primitive = False
         if type(self.mesh) == type(None):
             self.primitive = True
         self.name = 'sample'
