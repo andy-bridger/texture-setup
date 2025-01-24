@@ -64,9 +64,11 @@ class PoleFigurePresenter:
         self.View = view
     def init_view(self):
         self.View.setup_view()
+    def calc_pole_figure(self):
+        self.Model.execute()
     def plot_pole_figure(self):
         self.init_view()
-        self.Model.execute()
+        self.calc_pole_figure()
         self.View.plot_pole_figure(self.View.ax, self.Model.pole_figure_intensities, equator())
         self.View.fix_aspect(self.View.ax)
 

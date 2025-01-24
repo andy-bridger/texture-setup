@@ -103,4 +103,9 @@ class Goniometer(GenericStateMatrixProvider):
         return self.rot_mat
     def get_translation(self):
         return self.translation
+    def update(self):
+        self.update_rot()
+        self.update_norms()
+        self.update_equators()
+        self.update_fracs()
 

@@ -8,7 +8,7 @@ class ExperimentalData:
         if from_data == False:
             self.state_data = []
             self.detectors = detectors
-            self.detector_readouts = []
+            self.detector_readouts = [] #(detector
             self.name = name
             self.smps = smp
         else:

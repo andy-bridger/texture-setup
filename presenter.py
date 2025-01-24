@@ -46,7 +46,7 @@ class Presenter():
                                                          ('red', 'blue', 'green'))
         else:
             # only upon plotting do we want to recalc the mesh
-            self.lab_sample_artist = self.View.plot_mesh(self.View.lab_ax, self.Model.sample.get_mesh_vectors())
+            self.lab_sample_artist = self.View.plot_mesh(self.View.lab_ax, self.Model.sample.get_mesh_vectors(self.Model.r_dict['lab_sample']))
 
     def update_lab_sample(self):
         self.remove_artist_set(self.lab_sample_artist)

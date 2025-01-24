@@ -18,6 +18,7 @@ from stl import mesh
 from view_NyRTex import NyrtexView
 from presenter_NyRTex import NyrtexPresenter
 from model_NyRTex import NyrtexMantex
+from NyRTex_helpers import *
 
 info_dir = r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_info"
 det_r_dir = r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_Forbes_npy"
@@ -27,7 +28,6 @@ south_detectors_pos = np.load(f"{info_dir}/detector_positions/south_pos.npy")
 
 ndp = np.mean(north_detectors_pos, axis = 0)
 sdp = np.mean(south_detectors_pos, axis = 0)
-print(ndp, sdp)
 
 detectors = [Detector(ndp, 'north'), Detector(sdp, 'South')]
 
@@ -36,30 +36,33 @@ with open(f"{info_dir}/runs_pA.txt", 'r') as f:
 with open(f"{info_dir}/rotation_pA.txt", 'r') as f:
     angs = [x.rstrip('\n').split('\t') for x in f.readlines()]
 
-drs = np.asarray([np.moveaxis(np.concatenate((np.load(f"{det_r_dir}/ENOR00{run}.npy").sum(axis = 1)[:,None,:],
-                                   np.load(f"{det_r_dir}/ESUR00{run}.npy").sum(axis = 1)[:,None,:]), axis = 1), 1,0) for run in runs])
+
+sig_ax = np.load(f"{det_r_dir}/dspacing.npy")
+
+
+drs = np.asarray([np.concatenate((load_det_red(f"{det_r_dir}/ENOR00{run}.npy", sig_ax),
+                                   load_det_red(f"{det_r_dir}/ESUR00{run}.npy", sig_ax)), axis = 0) for run in runs])
+# run,det, Q, Qval/I
 
 exp_data = ExperimentalData(detectors, 'Cu_bolt', from_data= False)
-exp_data.detector_readouts = drs
+exp_data.detector_readouts = drs #(run, det, reading_num,Q/sig)
 exp_data.smps = [Goniometer(1, int(ang[0]), int(ang[1]) ,int(ang[2]), scheme = 'rot1' ) for ang in angs]
 
 source = Source(np.load(f"{info_dir}/source_pos.npy"))
 sample = SampleObject((0.,0.,0.), GenericStateMatrixProvider(np.eye(3), np.zeros(3)), mesh = mesh.Mesh.from_file(f"{info_dir}/mesh.stl"))
 sample_view_axes = ((1,0,0), (0,1,0))
 
+q_probe = 2.08
 
-alg = GetAllPoleFigures(exp_data, source, sample, sample_view_axes)
+alg = GetAllPoleFigures(exp_data, source, sample, sample_view_axes, q_probe= q_probe)
 
 view = PoleFigurePlot()
 dispatcher = PoleFigurePresenter(alg, view)
-
-dispatcher.plot_pole_figure()
-plt.show()
-
+dispatcher.calc_pole_figure()
 
 nview = NyrtexView()
-mantex = NyrtexMantex(view.ax, source, detectors, sample,
-                                  exp_data, sample_view_axes, ['red', 'blue'])
+mantex = NyrtexMantex(source, detectors, sample,
+                                  exp_data, sample_view_axes, ['red', 'blue'], q_probe=q_probe, probe_window=0.05)
 presenter = NyrtexPresenter(mantex, nview)
 
 presenter.plot_all()
