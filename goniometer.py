@@ -74,8 +74,8 @@ class Goniometer(GenericStateMatrixProvider):
 
     def update_equators(self):
         self.ax1_eq = orient_to_pole(self.equator(r = 3), self.ax1)
-        self.ax2_eq = orient_to_pole(self.equator(r = 2.95), self.ax2)
-        self.ax3_eq = orient_to_pole(self.equator(r = 2.9), self.ax3)
+        self.ax2_eq = orient_to_pole(self.equator(r = 2.9), self.ax2)
+        self.ax3_eq = orient_to_pole(self.equator(r = 2.8), self.ax3)
 
     def update_fracs(self):
         self.phi_frac = int((self.phi/360)*self.ax1_eq.shape[1])

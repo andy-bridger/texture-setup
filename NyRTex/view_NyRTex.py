@@ -19,8 +19,12 @@ class NyrtexView(View):
     def setup_view(self):
         self.fig = plt.figure()
         gs0 = self.fig.add_gridspec(10, 10, wspace = 0.1, hspace= 0.0)
-        self.lab_ax = self.fig.add_subplot(gs0[:8, :8], projection='3d')
-        self.lab_ax.view_init(azim = -270, elev = 0, roll = 90)
+        self.lab_ax = self.fig.add_subplot(gs0[:8, :4], projection='3d')
+        self.lab_ax.view_init(azim=90, elev=-120, roll=180)
+        self.sample_ax = self.fig.add_subplot(gs0[2:6, 3:8], projection='3d')
+        self.sample_ax.view_init(azim=90, elev=-120, roll=180)
+        self.object_ax = self.fig.add_subplot(gs0[2:6, 7:10], projection='3d')
+        self.object_ax.view_init(azim=90, elev=-120, roll=180)
         self.pole_proj_ax = self.fig.add_subplot(gs0[6:8, 0:5])
         self.det_ax = self.fig.add_subplot(gs0[6:8, 4:7])
         self.calc_pf_ax = self.fig.add_subplot(gs0[6:8, 6:10])
@@ -33,10 +37,14 @@ class NyrtexView(View):
         self.pole_proj_ax.set_axis_off()
         self.calc_pf_ax.set_axis_off()
         self.lab_ax.set_axis_off()
+        self.sample_ax.set_axis_off()
+        self.object_ax.set_axis_off()
     def fix_aspect(self):
         self.lab_ax.set_aspect('equal')
         self.pole_proj_ax.set_aspect('equal')
         self.calc_pf_ax.set_aspect('equal')
+        self.sample_ax.set_aspect('equal')
+        self.object_ax.set_aspect('equal')
     def show_detector_readout(self, ax, readouts, cols):
         artists = []
         for i, r in enumerate(readouts):
@@ -52,6 +60,17 @@ class NyrtexView(View):
                                 edgecolors=det_cols[idet],s = 80))
         #eq = self.equator()
         artists.append(ax.plot(eq[0], eq[1], c = 'grey'))
+        return artists
+    def plot_cart_ax(self, ax, mat, pos, length = 1):
+        artists = []
+        artists.append(ax.quiver(*pos, *mat[:,0]*length, color = 'cadetblue'))
+        artists.append(ax.quiver(*pos, *mat[:,1]*length, color = 'magenta'))
+        artists.append(ax.quiver(*pos, *mat[:,2]*length, color = 'dodgerblue'))
+        return artists
+    def plot_cart_ax_2d(self, ax, mat, pos, length = 1):
+        artists = []
+        artists.append(ax.quiver(*pos, *mat[:,0]*length, 0, color = 'cadetblue',scale =1, width = 0.01))
+        artists.append(ax.quiver(*pos, *mat[:,1]*length, color = 'dodgerblue', scale = 1, width = 0.01))
         return artists
     def add_probe_pos_widget(self, update_probe_p_scale, min, max, init):
         pos = plt.axes([0.44, 0.2, 0.22, 0.03])

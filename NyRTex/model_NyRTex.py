@@ -1,5 +1,8 @@
 import sys
 import os
+
+from goniometer import GenericStateMatrixProvider
+
 # Add the parent directory to the system path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from model import Mantex
@@ -14,6 +17,8 @@ class NyrtexMantex():
         self.source = source
         self.detectors = detectors
         self.sample = sample
+        self.reference_sample = deepcopy(sample)
+        self.reference_sample.smp = GenericStateMatrixProvider(np.eye(3), np.zeros(3))
         self.raw_exp_data = deepcopy(exp_data)
         self.sample_view_axes = sample_view_axes
         self.detector_colors = detector_colors
@@ -48,6 +53,9 @@ class NyrtexMantex():
 
     def get_detector_vectors(self):
         return [det.position - self.sample.position for det in self.detectors]
+
+    def get_norm_detector_vectors(self):
+        return [x/np.linalg.norm(x) for x in [det.position - self.sample.position for det in self.detectors]]
 
     def get_cube(self, size = (0.1, 0.1, 0.1),
                   offset = (0,0,0), use_gonio = True):
