@@ -17,7 +17,7 @@ class NyrtexPresenter(Presenter):
         self.View.setup_view()
         self.View.update_view_axes()
         self.View.add_lab_k_widgets(self.lab_k_update)
-        self.View.add_sample_scale_widget(self.sample_scale_update)
+        self.View.add_sample_scale_widget(self.sample_scale_update, self.Model.r_dict['lab_sample'])
         self.View.add_gonio_ring_scale_widget(self.gr_scale_update)
         self.View.add_gonio_axis_scale_widget(self.ga_scale_update)
         self.View.add_probe_pos_widget(self.update_probe_pos,
@@ -28,10 +28,8 @@ class NyrtexPresenter(Presenter):
 
     def plot_readouts(self):
         self.det_readout_plot_artist = self.View.show_detector_readout(self.View.det_ax,
-                                                                       self.Model.detector_readout,
-                                                                       self.Model.sig_ax,
-                                                                       self.Model.detector_colors,
-                                                                       25)
+                                                                       self.Model.get_current_readouts(),
+                                                                       self.Model.detector_colors)
 
     def plot_lab_sample(self):
         self.lab_sample_artist = self.View.plot_mesh(self.View.lab_ax, self.Model.mantex.sample.get_mesh_vectors(self.Model.r_dict['lab_sample']))
@@ -86,7 +84,7 @@ class NyrtexPresenter(Presenter):
 
     def plot_q_probe(self):
         self.det_probe_artist = self.View.show_detector_probe(self.View.det_ax,
-                                                              self.Model.q_probe,
+                                                              self.Model.Alg.q_probe,
                                                               self.Model.probe_window)
 
 
@@ -111,13 +109,12 @@ class NyrtexPresenter(Presenter):
     def sample_scale_update(self, val):
         self.remove_artist_set(self.lab_sample_artist)
         self.Model.r_dict['lab_sample'] = val
-        if not self.Model.sample.primitive:
-            self.Model.sample.scale = val
+        #if not self.Model.sample.primitive:
+        #    self.Model.sample.scale = val
         self.plot_lab_sample()
         self.View.fix_aspect()
 
     def plot_pole_figure_intensities(self):
-        self.Model.Alg.execute()
         self.pole_figure_artists = []
         self.pole_figure_artists += self.View.plot_pole_figure_intensities(self.View.calc_pf_ax,
                                                                                 self.Model.Alg.pole_figure_intensities,self.Model.mantex.pole_figure_points,
@@ -126,8 +123,8 @@ class NyrtexPresenter(Presenter):
     def update_probe_pos(self, val):
         self.remove_artist_set(self.det_probe_artist)
         self.remove_artist_set(self.pole_figure_artists)
-        self.Model.q_probe = val
-        self.Model.update_mantex()
+        self.Model.Alg.q_probe = val
+        self.Model.Alg.execute()
         self.plot_pole_figure_intensities()
         self.plot_q_probe()
 

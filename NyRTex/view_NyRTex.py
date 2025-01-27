@@ -40,16 +40,16 @@ class NyrtexView(View):
     def show_detector_readout(self, ax, readouts, cols):
         artists = []
         for i, r in enumerate(readouts):
-            artists.append(ax.plot(r[:,0], (r[:,1]*1000)+(i*1.5), c = cols[i]))
+            artists.append(ax.plot(r[:,0], (r[:,1])+(i*1.5), c = cols[i]))
         return artists
 
     def plot_pole_figure_intensities(self, ax, pole_figure_intensities, det_pKs, det_cols, eq):
         artists = []
-        for idet, pK in enumerate(det_pKs):
-            artists.append(ax.scatter(pK[0], pK[1], facecolors = 'none',
-                                edgecolors=det_cols[idet],s = 100))
         artists.append(ax.scatter(pole_figure_intensities[:,0], pole_figure_intensities[:,1],
                             c = pole_figure_intensities[:,3]))
+        for idet, pK in enumerate(det_pKs):
+            artists.append(ax.scatter(pK[0], pK[1], facecolors = 'none',
+                                edgecolors=det_cols[idet],s = 80))
         #eq = self.equator()
         artists.append(ax.plot(eq[0], eq[1], c = 'grey'))
         return artists
@@ -61,7 +61,7 @@ class NyrtexView(View):
         pos = plt.axes([0.1, 0.2, 0.15, 0.03])
         self.run_slider = Slider(pos, 'run_num', min, max, valinit=init, valstep = 1)
         self.run_slider.on_changed(update_run)
-    def add_sample_scale_widget(self, update_sample_scale):
+    def add_sample_scale_widget(self, update_sample_scale, init_scale):
         pos = plt.axes([0.85, 0.05, 0.025, 0.03])
-        self.sample_slider = Slider(pos, 'Sample scale', 0.00, 5, valinit=1, valstep = 0.1)
+        self.sample_slider = Slider(pos, 'Sample scale', 0.00, 5, valinit=init_scale, valstep = 0.1)
         self.sample_slider.on_changed(update_sample_scale)

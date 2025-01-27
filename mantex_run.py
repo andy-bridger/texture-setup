@@ -9,7 +9,7 @@ from sample import SampleObject
 import matplotlib.pyplot as plt
 from helper_funcs import *
 from concurrent.futures import ThreadPoolExecutor
-import copy
+from copy import deepcopy
 
 
 class GetSinglePoleFigure:
@@ -32,10 +32,25 @@ class GetSinglePoleFigure:
 
 class GetAllPoleFigures:
     def __init__(self, exp_data, source, sample, sample_view_axes = ((1,0,0),(0,1,0)),  q_probe = 1, probe_window = 0.05):
+        self.exp_data = exp_data
+        self.source = source
+        self.sample = sample
         self.sample_view_axes = np.asarray(sample_view_axes)
-        self.spfs = [GetSinglePoleFigure(exp_data, source, sample, sample_view_axes ,  q_probe , probe_window , ind = i) for i in range(len(exp_data.smps))]
+        self.q_probe = q_probe
+        self.probe_window = probe_window
+    def gen_spfs(self):
+        spfs = []
+        for i, smp in enumerate(self.exp_data.smps):
+            new_sample = deepcopy(self.sample)
+            self.sample.smp = smp
+            spfs.append(GetSinglePoleFigure(deepcopy(self.exp_data), self.source, new_sample, self.sample_view_axes,
+                                q_probe=self.q_probe, probe_window=self.probe_window, ind=i))
+        self.spfs = spfs
     def execute(self):
-        pfis = [spf.execute() for spf in self.spfs]
+        self.gen_spfs()
+        pfis = []
+        for i, spf in enumerate(self.spfs):
+            pfis.append(spf.execute())
         pfis = np.concatenate(pfis, axis = 0)
         self.pole_figure_intensities = pfis[np.argsort(pfis[:,-1])]
 

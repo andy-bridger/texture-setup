@@ -17,7 +17,7 @@ class SampleObject:
 
     def get_internal_path_length(self, ki, kd):
         # assume the beam is incident on 0,0,0
-        mv = self.get_mesh_vectors()[:,0,:]
+        mv = self.get_mesh_vectors(scale=1)[:,0,:]
         mv_norm = mv/np.linalg.norm(mv, axis = 1)[:,None]
         vert_ki = np.argmax(np.dot(-ki, mv_norm.T)) #closest point to perfect alignment with ki
         vert_kd = np.argmax(np.dot(kd, mv_norm.T))  # closest point to perfect alignment with kd

@@ -104,7 +104,7 @@ class Mantex():
         return pfi[np.argsort(pfi[:,3])]
 
     def readout_spectrum(self, spectrum, det):
-        return self.FitSpectrum(self.correct_spectrum_for_attenuation(spectrum, det))
+        return self.BadFitSpectrum(self.correct_spectrum_for_attenuation(spectrum, det))
 
     def correct_spectrum_for_attenuation(self, spectrum, det):
         ipl, entry_point, exit_point = self.sample.get_internal_path_length(self.ki, det.position)
@@ -115,8 +115,15 @@ class Mantex():
         # can imagine how in mantid implementation this will be a bit jazzier
         popt, pcov = curve_fit(gaussian, spectrum[:,0], spectrum[:,1],
                                bounds = ((0, self.q_probe-self.probe_window, 0),
-                                         (2, self.q_probe+self.probe_window, 2)))
+                                         (1e6, self.q_probe+self.probe_window, 2)))
         return popt[0] # return the amplitude of the fit gaussian
+    def BadFitSpectrum(self, spectrum):
+        lb = np.searchsorted(spectrum[:,0], self.q_probe-self.probe_window)
+        ub = np.searchsorted(spectrum[:, 0], self.q_probe + self.probe_window)
+        spec_win = spectrum[lb:ub, 1]
+        return spec_win.max()-spec_win.min() #Gaussian fit is kind of rubbish anyway
+                                             #might as well have a simple fit that can be interpreted
+                                             #on visual inspection
 
 def gaussian(x, amplitude, mean, stddev):
     return amplitude * np.exp(-((x - mean) / 4 / stddev)**2)

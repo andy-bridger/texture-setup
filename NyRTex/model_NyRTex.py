@@ -23,7 +23,7 @@ class NyrtexMantex():
         self.q_range = self.raw_exp_data.detector_readouts[0,0,:,0].copy()
 
         self.r_dict = {'recip_sample': 1,
-                                   'lab_sample': 1,
+                                   'lab_sample': 3,
                                    'k_vecs': 1,
                                    'gonio_r': 1,
                                    'gonio_v': 1}
@@ -58,12 +58,12 @@ class NyrtexMantex():
         return cube_data
 
     def get_lab_frame(self):
-        source_repr = self.get_cube(offset = self.source.position, size=[2,1,1], use_gonio= False)
+        source_repr = self.get_cube(offset = self.source.position, size=[1,1,2], use_gonio= False)
         source_col = ['grey']*3
         det_reprs = []
         det_cols = []
         for idet, det in enumerate(self.detectors):
-            det_reprs.append(self.get_cube(offset=det.position, size=[1, 1, 2], use_gonio=False))
+            det_reprs.append(self.get_cube(offset=det.position, size=[1, 2, 1], use_gonio=False))
             det_cols.append([self.detector_colors[idet]] * 3)
         return source_repr, source_col, det_reprs, det_cols
 

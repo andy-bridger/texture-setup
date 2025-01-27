@@ -49,20 +49,15 @@ exp_data.detector_readouts = drs #(run, det, reading_num,Q/sig)
 exp_data.smps = [Goniometer(1, int(ang[0]), int(ang[1]) ,int(ang[2]), scheme = 'rot1' ) for ang in angs]
 
 source = Source(np.load(f"{info_dir}/source_pos.npy"))
-sample = SampleObject((0.,0.,0.), GenericStateMatrixProvider(np.eye(3), np.zeros(3)), mesh = mesh.Mesh.from_file(f"{info_dir}/mesh.stl"))
+sample = SampleObject((0.,0.,0.), GenericStateMatrixProvider(np.eye(3), np.zeros(3)),
+                      mesh = mesh.Mesh.from_file(f"{info_dir}/mesh.stl"), mesh_scale=1)
 sample_view_axes = ((1,0,0), (0,1,0))
 
 q_probe = 2.08
 
-alg = GetAllPoleFigures(exp_data, source, sample, sample_view_axes, q_probe= q_probe)
-
-view = PoleFigurePlot()
-dispatcher = PoleFigurePresenter(alg, view)
-dispatcher.calc_pole_figure()
-
 nview = NyrtexView()
 mantex = NyrtexMantex(source, detectors, sample,
-                                  exp_data, sample_view_axes, ['red', 'blue'], q_probe=q_probe, probe_window=0.05)
+                                  exp_data, sample_view_axes, ['red', 'blue'], q_probe=q_probe, probe_window=0.1)
 presenter = NyrtexPresenter(mantex, nview)
 
 presenter.plot_all()
