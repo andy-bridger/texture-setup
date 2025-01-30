@@ -26,8 +26,8 @@ det_r_dir = r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_Forbes_n
 north_detectors_pos = np.load(f"{info_dir}/detector_positions/north_pos.npy")
 south_detectors_pos = np.load(f"{info_dir}/detector_positions/south_pos.npy")
 
-ndp = np.mean(north_detectors_pos, axis = 0)
-sdp = np.mean(south_detectors_pos, axis = 0)
+ndp = np.roll(np.mean(north_detectors_pos, axis = 0), 1)
+sdp = np.roll(np.mean(south_detectors_pos, axis = 0),1)
 
 detectors = [Detector(ndp, 'north'), Detector(sdp, 'South')]
 
@@ -48,12 +48,14 @@ exp_data = ExperimentalData(detectors, 'Cu_bolt', from_data= False)
 exp_data.detector_readouts = drs #(run, det, reading_num,Q/sig)
 exp_data.smps = [Goniometer(1, int(ang[0]), int(ang[1]) ,int(ang[2]), scheme = 'rot1' ) for ang in angs]
 
-source = Source(np.load(f"{info_dir}/source_pos.npy"))
+source = Source(np.roll(np.load(f"{info_dir}/source_pos.npy"), 1)) # should be defined with det at -x
 sample = SampleObject((0.,0.,0.), GenericStateMatrixProvider(np.eye(3), np.zeros(3)),
                       mesh = mesh.Mesh.from_file(f"{info_dir}/mesh.stl"), mesh_scale=1)
-sample_view_axes = ((1,0,0), (0,0,1))
+sample_view_axes = ((1,0,0), (0,1,0))
 
 q_probe = 2.08
+
+print(source.position, sdp)
 
 nview = NyrtexView()
 mantex = NyrtexMantex(source, detectors, sample,

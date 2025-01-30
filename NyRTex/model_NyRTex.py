@@ -66,12 +66,12 @@ class NyrtexMantex():
         return cube_data
 
     def get_lab_frame(self):
-        source_repr = self.get_cube(offset = self.source.position, size=[1,1,2], use_gonio= False)
+        source_repr = self.get_cube(offset = self.source.position, size=[2,1,0.5], use_gonio= False)
         source_col = ['grey']*3
         det_reprs = []
         det_cols = []
         for idet, det in enumerate(self.detectors):
-            det_reprs.append(self.get_cube(offset=det.position, size=[1, 2, 1], use_gonio=False))
+            det_reprs.append(self.get_cube(offset=det.position, size=[1, 0.5, 2], use_gonio=False))
             det_cols.append([self.detector_colors[idet]] * 3)
         return source_repr, source_col, det_reprs, det_cols
 

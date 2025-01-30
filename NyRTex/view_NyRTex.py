@@ -20,11 +20,11 @@ class NyrtexView(View):
         self.fig = plt.figure()
         gs0 = self.fig.add_gridspec(10, 10, wspace = 0.1, hspace= 0.0)
         self.lab_ax = self.fig.add_subplot(gs0[:8, :4], projection='3d')
-        self.lab_ax.view_init(azim=90, elev=-120, roll=180)
+        #self.lab_ax.view_init(azim=90, elev=-120, roll=180)
         self.sample_ax = self.fig.add_subplot(gs0[2:6, 3:8], projection='3d')
-        self.sample_ax.view_init(azim=90, elev=-120, roll=180)
+        #self.sample_ax.view_init(azim=90, elev=-120, roll=180)
         self.object_ax = self.fig.add_subplot(gs0[2:6, 7:10], projection='3d')
-        self.object_ax.view_init(azim=90, elev=-120, roll=180)
+        #self.object_ax.view_init(azim=90, elev=-120, roll=180)
         self.pole_proj_ax = self.fig.add_subplot(gs0[6:8, 0:5])
         self.det_ax = self.fig.add_subplot(gs0[6:8, 4:7])
         self.calc_pf_ax = self.fig.add_subplot(gs0[6:8, 6:10])
@@ -69,15 +69,15 @@ class NyrtexView(View):
         return artists
     def plot_cart_ax_2d(self, ax, mat, pos, length = 1):
         artists = []
-        artists.append(ax.quiver(*pos, *mat[:,0]*length, 0, color = 'cadetblue',scale =1, width = 0.01))
-        artists.append(ax.quiver(*pos, *mat[:,1]*length, color = 'dodgerblue', scale = 1, width = 0.01))
+        artists.append(ax.quiver(*pos, *mat[:,1]*length, color = 'magenta', scale = 1, width = 0.01))
+        artists.append(ax.quiver(*pos, *mat[:,0]*length, color = 'cadetblue', scale = 1, width = 0.01))
         return artists
     def add_probe_pos_widget(self, update_probe_p_scale, min, max, init):
         pos = plt.axes([0.44, 0.2, 0.22, 0.03])
         self.probe_p_slider = Slider(pos, 'probe Q', min, max, valinit=init, valstep = 0.02)
         self.probe_p_slider.on_changed(update_probe_p_scale)
     def add_run_num_widget(self, update_run, min, max, init):
-        pos = plt.axes([0.1, 0.2, 0.15, 0.03])
+        pos = plt.axes([0.44, 0.1, 0.22, 0.03])
         self.run_slider = Slider(pos, 'run_num', min, max, valinit=init, valstep = 1)
         self.run_slider.on_changed(update_run)
     def add_sample_scale_widget(self, update_sample_scale, init_scale):
