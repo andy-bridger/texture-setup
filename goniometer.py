@@ -33,9 +33,11 @@ class Goniometer(GenericStateMatrixProvider):
         if self.scheme == 'euler':
             self.update_norms = self.update_norms_euler
             self.update_rot = self.update_rot_euler
+            self.labels = [r'$\phi_{1}$', r'$\Phi$', r'$\phi_{2}$']
         else:
             self.update_norms = self.update_norms_rot1
             self.update_rot = self.update_rot_rot1
+            self.labels = [r'$\chi$', r'$\omega$', r'$\phi$']
         self.update_rot()
         self.scale = scale
         self.update_equators()

@@ -53,7 +53,6 @@ sample = SampleObject((0.,0.,0.), GenericStateMatrixProvider(np.eye(3), np.zeros
                       mesh = mesh.Mesh.from_file(f"{info_dir}/mesh.stl"), mesh_scale=1)
 sample_view_axes = ((1,0,0), (0,0,1))
 
-
 q_probe = 2.08
 
 nview = NyrtexView()

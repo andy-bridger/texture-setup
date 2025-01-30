@@ -18,10 +18,10 @@ class NyrtexPresenter(Presenter):
     def init_view(self):
         self.View.setup_view()
         self.View.update_view_axes()
-        self.View.add_lab_k_widgets(self.lab_k_update)
-        self.View.add_sample_scale_widget(self.sample_scale_update, self.Model.r_dict['lab_sample'])
-        self.View.add_gonio_ring_scale_widget(self.gr_scale_update)
-        self.View.add_gonio_axis_scale_widget(self.ga_scale_update)
+        #self.View.add_lab_k_widgets(self.lab_k_update)
+        #self.View.add_sample_scale_widget(self.sample_scale_update, self.Model.r_dict['lab_sample'])
+        #self.View.add_gonio_ring_scale_widget(self.gr_scale_update)
+        #self.View.add_gonio_axis_scale_widget(self.ga_scale_update)
         self.View.add_probe_pos_widget(self.update_probe_pos,
                                        self.Model.q_range[0],
                                        self.Model.q_range[-1],
@@ -131,6 +131,7 @@ class NyrtexPresenter(Presenter):
         # Object Reference
         self.plot_ref_sample(self.View.object_ax)
         self.add_ax_to_plot(self.View.object_ax, np.eye(3,3), (0.2,0,0))
+        self.add_angles_titles()
 
         # Detector
         self.plot_readouts()
@@ -145,6 +146,10 @@ class NyrtexPresenter(Presenter):
         self.add_ax_to_plot(self.View.calc_pf_ax, np.eye(2,2),(-1, -1), dim='2d', length=0.2)
 
         self.View.fix_aspect()
+
+    def add_angles_titles(self):
+        smp = self.Model.mantex.sample.smp
+        self.View.sample_ax.set_title(f"{smp.labels[0]}: {smp.phi}, {smp.labels[1]}: {smp.theta}, {smp.labels[2]}: {smp.psi}")
 
     def sample_scale_update(self, val):
         self.remove_artist_set(self.lab_sample_artist)
