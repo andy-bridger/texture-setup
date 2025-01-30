@@ -71,7 +71,7 @@ class NyrtexMantex():
         det_reprs = []
         det_cols = []
         for idet, det in enumerate(self.detectors):
-            det_reprs.append(self.get_cube(offset=det.position, size=[1, 0.5, 2], use_gonio=False))
+            det_reprs.append(self.get_cube(offset=det.position, size=[0.1, 0.1, 0.1], use_gonio=False))
             det_cols.append([self.detector_colors[idet]] * 3)
         return source_repr, source_col, det_reprs, det_cols
 

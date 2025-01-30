@@ -47,17 +47,25 @@ class NyrtexView(View):
         self.object_ax.set_aspect('equal')
     def show_detector_readout(self, ax, readouts, cols):
         artists = []
+        alpha = np.clip(2/len(readouts), 0, 1)
         for i, r in enumerate(readouts):
-            artists.append(ax.plot(r[:,0], (r[:,1])+(i*1.5), c = cols[i]))
+            artists.append(ax.plot(r[:,0], (r[:,1])+(i*0.002), c = cols[i], alpha = alpha))
+        return artists
+    def plot_pole_figure_position(self, ax, pole_figure_points, detector_colors, eq):
+        artists = []
+        size = 100 / len(detector_colors)
+        artists.append(ax.scatter(pole_figure_points[:,0], pole_figure_points[:,1], c = detector_colors, s = size))
+        artists.append(ax.plot(eq[0], eq[1], c='grey'))
         return artists
 
     def plot_pole_figure_intensities(self, ax, pole_figure_intensities, det_pKs, det_cols, eq):
         artists = []
+        size = 100/len(det_pKs)
         artists.append(ax.scatter(pole_figure_intensities[:,0], pole_figure_intensities[:,1],
-                            c = pole_figure_intensities[:,3]))
+                            c = pole_figure_intensities[:,3], s = size))
         for idet, pK in enumerate(det_pKs):
             artists.append(ax.scatter(pK[0], pK[1], facecolors = 'none',
-                                edgecolors=det_cols[idet],s = 80))
+                                edgecolors=det_cols[idet],s = 1.25*size))
         #eq = self.equator()
         artists.append(ax.plot(eq[0], eq[1], c = 'grey'))
         return artists
