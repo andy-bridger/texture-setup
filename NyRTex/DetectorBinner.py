@@ -20,11 +20,6 @@ from presenter_NyRTex import NyrtexPresenter
 from model_NyRTex import NyrtexMantex
 from NyRTex_helpers import *
 
-info_dir = r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_info"
-det_r_dir = r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_Forbes_npy"
-
-north_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/north_pos.npy"), 1)
-south_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/south_pos.npy"),1)
 
 def project_onto_cylinder(arr):
     xyarr = arr[:,:2]
@@ -35,9 +30,6 @@ def project_onto_cylinder(arr):
     theta[nperp] = np.arctan(ys[nperp]/xs[nperp])#+ 0.25*np.pi*(np.sign(ys[nperp])+1)
     theta = np.where(theta < 1, theta+np.pi, theta)
     return np.concatenate((theta[:,None], arr[:,2][:,None]), axis = 1)
-
-n_proj = project_onto_cylinder(north_detectors_pos.copy())
-s_proj = project_onto_cylinder(south_detectors_pos.copy())
 
 
 def get_det_grid_masks(det_pos, n_tbins, n_zbins):
@@ -61,13 +53,19 @@ def get_det_grid_masks(det_pos, n_tbins, n_zbins):
             bin_masks.append(t_mask)
     return np.asarray(bin_masks)
 
-n_zbins = 3
-n_tbins = 3
+n_zbins = 5
+n_tbins = 1
+
+info_dir = r"C:\Users\kcd17618\Documents\NyRTex\DDSteel\DDSteel_info"
+
+north_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/north_pos.npy"), 1)
+south_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/south_pos.npy"),1)
+
+n_proj = project_onto_cylinder(north_detectors_pos.copy())
+s_proj = project_onto_cylinder(south_detectors_pos.copy())
 
 ngrid_masks = get_det_grid_masks(north_detectors_pos, n_tbins, n_zbins)
 sgrid_masks = get_det_grid_masks(south_detectors_pos, n_tbins, n_zbins)
-
-info_dir = r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_info"
 
 np.save(f"{info_dir}/detector_positions/north_bins_{n_tbins}x{n_zbins}.npy", ngrid_masks)
 np.save(f"{info_dir}/detector_positions/south_bins_{n_tbins}x{n_zbins}.npy", sgrid_masks)

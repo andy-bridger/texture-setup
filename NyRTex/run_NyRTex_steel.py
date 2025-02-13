@@ -26,8 +26,8 @@ det_r_dir = r"C:\Users\kcd17618\Documents\NyRTex\DDSteel\DDSteel_d_npy"
 north_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/north_pos.npy"), 1 , axis = 1)
 south_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/south_pos.npy"), 1, axis = 1)
 
-ngrid_masks = np.load(f"{info_dir}/detector_positions/north_bins_3x5.npy")
-sgrid_masks = np.load(f"{info_dir}/detector_positions/south_bins_3x5.npy")
+ngrid_masks = np.load(f"{info_dir}/detector_positions/north_bins_3x1.npy")
+sgrid_masks = np.load(f"{info_dir}/detector_positions/south_bins_3x1.npy")
 
 detectors = []
 det_colors = []
@@ -45,6 +45,12 @@ with open(f"{info_dir}/runs.txt", 'r') as f:
 with open(f"{info_dir}/rotations.txt", 'r') as f:
     angs = [x.rstrip('\n').split('\t') for x in f.readlines()]
 
+def replace_angs():
+    return np.concatenate([np.asarray([90]*12 + [-90] * 12)[:,None],
+            np.asarray([45]*6 + [-45] *6 + [45]*6 + [-45] *6)[:,None],
+            np.asarray(list(range(0, 90, 15)) * 4)[:,None]], axis = 1)
+
+angs = replace_angs()
 
 sig_ax = np.load(f"{det_r_dir}/dspacing.npy")
 
