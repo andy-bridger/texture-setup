@@ -26,9 +26,9 @@ def get_mat_from_angles(ang, scheme, prog):
 
 prog = 'mantid' # nyrtex or mantid, they have different reference frames
 
-fp = r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_info\rotation_pA.txt"
-save_path = fr"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_info\state_transforms_{prog}.npy"
-scheme = 'rot1'
+fp = r"C:\Users\kcd17618\Documents\NyRTex\DDSteel\DDSteel_info\rotations.txt"
+scheme = 'euler'
+save_path = fr"C:\Users\kcd17618\Documents\NyRTex\DDSteel\DDSteel_info\state_transforms_{prog}_{scheme}.npy"
 translations = None
 
 with open(fp, "r") as f:

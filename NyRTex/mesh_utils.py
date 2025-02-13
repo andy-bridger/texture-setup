@@ -39,3 +39,27 @@ def mesh_cylindrical_side(radius, height, n_rad_step, n_vert_step, offset = np.z
     zs = zs[face_tris//n_rad_step]
 
     return np.concatenate([xs[:,:,None], ys[:,:,None], zs[:,:,None]], axis = -1) + offset[None, None,:]
+
+def mesh_cuboid(a, b, c, offset = np.zeros(3)):
+    vec = np.array((a/2, b/2, c/2))
+    p1 = (np.array((-1, -1,-1))*vec)[None,:]
+    p2 = (np.array((1,-1,-1))*vec)[None,:]
+    p3 = (np.array((1,1,-1))*vec)[None,:]
+    p4 = (np.array((-1,1,-1))*vec)[None,:]
+    p5 = -p3
+    p6 = -p4
+    p7 = -p1
+    p8 = -p2
+    tris = np.asarray((np.concatenate((p1, p2, p3), axis = 0),
+            np.concatenate((p1, p4, p3), axis=0),
+            np.concatenate((p1, p2, p6), axis=0),
+            np.concatenate((p1, p5, p6), axis=0),
+            np.concatenate((p2, p3, p7), axis=0),
+            np.concatenate((p2, p6, p7), axis=0),
+            np.concatenate((p3, p4, p8), axis=0),
+            np.concatenate((p3, p7, p8), axis=0),
+            np.concatenate((p1, p4, p8), axis=0),
+            np.concatenate((p1, p5, p8), axis=0),
+            np.concatenate((p5, p6, p7), axis=0),
+            np.concatenate((p5, p8, p7), axis=0),))
+    return tris + offset[None,None,:]

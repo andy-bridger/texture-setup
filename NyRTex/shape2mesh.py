@@ -4,7 +4,7 @@ from mesh_utils import *
 from stl import mesh
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-infodir = "C:/Users/kcd17618/Documents/NyRTex/Cu_bolt_Forbes/Cu_bolt_info"
+infodir = "C:/Users/kcd17618/Documents/NyRTex/DDSteel/DDSteel_info"
 
 shape = np.load(f"{infodir}/shape.npy")
 shape_params = np.load(f"{infodir}/shape_params.npy")[0]/1000 # as shape_params are in mm
@@ -19,6 +19,10 @@ if shape[0] == 'Cilindrical':
         mesh_bottom = mesh_circ(radius, offset + np.array((0, 0, -height/2)), n_rad_step)
         mesh_sides = mesh_cylindrical_side(radius, height, n_rad_step, n_vert_steps, offset+ np.array((0, 0, -height/2)))
         return np.concatenate((mesh_top, mesh_sides, mesh_bottom), axis =0)
+
+if shape[0] == 'Tetragonal':
+    def gen_func(height, width, thickness, offset = np.zeros(3)):
+        return mesh_cuboid(height, width, thickness, offset)
 
 
 
