@@ -114,3 +114,12 @@ def alpha_shape(coords, alpha):
     m = geometry.MultiLineString(edge_points)
     triangles = list(polygonize(m))
     return cascaded_union(triangles), edge_points
+
+def convert_pfi_to_polar(pfi):
+    x, y = pfi[:,0], pfi[:,1]
+    rho = np.sqrt(x**2 + y**2)
+    phi = np.arctan2(y, x)
+    out_pfi = pfi.copy()
+    out_pfi[:,0] = rho
+    out_pfi[:,1] = phi
+    return out_pfi

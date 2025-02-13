@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 from scipy.spatial.transform import Rotation
 from model import *
 from mpl_toolkits import mplot3d
+from NyRTex_helpers import convert_pfi_to_polar
 
 from matplotlib.widgets import Slider, Button, TextBox
 
@@ -25,7 +26,7 @@ class NyrtexView(View):
         #self.sample_ax.view_init(azim=90, elev=-120, roll=180)
         self.object_ax = self.fig.add_subplot(gs0[2:6, 7:10], projection='3d')
         #self.object_ax.view_init(azim=90, elev=-120, roll=180)
-        self.pole_proj_ax = self.fig.add_subplot(gs0[6:8, 0:5])
+        self.pole_proj_ax = self.fig.add_subplot(gs0[6:10, 0:5])
         self.det_ax = self.fig.add_subplot(gs0[6:8, 4:7])
         self.calc_pf_ax = self.fig.add_subplot(gs0[6:8, 6:10])
         self.pole_proj_ax.set_xlim([-1.1, 1.1])
@@ -51,10 +52,19 @@ class NyrtexView(View):
         for i, r in enumerate(readouts):
             artists.append(ax.plot(r[:,0], (r[:,1])+(i*0.002), c = cols[i], alpha = alpha))
         return artists
+    def label_detectors(self, ax, Ks, scale):
+        for i, K in enumerate(Ks):
+            ax.text(*K*scale, str(i))
+            print(f"det {i} has K vec: {K}")
     def plot_pole_figure_position(self, ax, pole_figure_points, detector_colors, eq):
         artists = []
         size = 100 / len(detector_colors)
         artists.append(ax.scatter(pole_figure_points[:,0], pole_figure_points[:,1], c = detector_colors, s = size))
+        polar_pfp = convert_pfi_to_polar(pole_figure_points)
+        for i, pfp in enumerate(pole_figure_points):
+            r,theta = polar_pfp[i,:2]
+            artists.append(ax.annotate(str(i),pfp[:2]))
+            print(f"det {i} has point at r = {r}, theta = {np.rad2deg(theta)}degs")
         artists.append(ax.plot(eq[0], eq[1], c='grey'))
         return artists
 

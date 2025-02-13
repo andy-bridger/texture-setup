@@ -23,8 +23,8 @@ from NyRTex_helpers import *
 info_dir = r"C:\Users\kcd17618\Documents\NyRTex\DDSteel\DDSteel_info"
 det_r_dir = r"C:\Users\kcd17618\Documents\NyRTex\DDSteel\DDSteel_d_npy"
 
-north_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/north_pos.npy"), 1 , axis = 1)
-south_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/south_pos.npy"), 1, axis = 1)
+north_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/north_pos.npy"), 1 , axis = 1)# - np.array((0,0.5,0))
+south_detectors_pos = np.roll(np.load(f"{info_dir}/detector_positions/south_pos.npy"), 1, axis = 1)# + np.array((0,0.5,0))
 
 ngrid_masks = np.load(f"{info_dir}/detector_positions/north_bins_3x5.npy")
 sgrid_masks = np.load(f"{info_dir}/detector_positions/south_bins_3x5.npy")
@@ -39,6 +39,8 @@ for i in range(len(ngrid_masks)):
     det_colors.append('red')
 for i in range(len(sgrid_masks)):
     det_colors.append('blue')
+for i, det in enumerate(detectors):
+    print(f"det {i} is at position {det.position}")
 
 with open(f"{info_dir}/runs.txt", 'r') as f:
     runs = [x.split('\t')[0] for x in f.readlines()]
@@ -46,8 +48,8 @@ with open(f"{info_dir}/rotations.txt", 'r') as f:
     angs = [x.rstrip('\n').split('\t') for x in f.readlines()]
 
 def replace_angs():
-    return np.concatenate([np.asarray([90]*12 + [-90] * 12)[:,None],
-            np.asarray([45]*6 + [-45] *6 + [45]*6 + [-45] *6)[:,None],
+    return np.concatenate([np.asarray([90]*12 + [0] * 12)[:,None],
+            np.asarray([45]*6 + [0] *6 + [45]*6 + [-45] *6)[:,None],
             np.asarray(list(range(0, 90, 15)) * 4)[:,None]], axis = 1)
 
 #angs = replace_angs()

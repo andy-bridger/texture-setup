@@ -149,6 +149,14 @@ class NyrtexPresenter(Presenter):
 
         self.View.fix_aspect()
 
+    def plot_lab_components(self):
+        source_repr, source_col, det_reprs, det_cols = self.Model.get_lab_frame()
+        self.source_artist = self.View.plot_cube(self.View.lab_ax, source_repr, source_col)
+        self.det_artists = [self.View.plot_cube(self.View.lab_ax,
+                                                det_repr,
+                                                det_cols[i]) for i, det_repr in enumerate(det_reprs)]
+        self.View.label_detectors(self.View.lab_ax, self.Model.mantex.Ks, self.Model.r_dict['k_vecs']*10)
+
     def add_angles_titles(self):
         smp = self.Model.mantex.sample.smp
         self.View.sample_ax.set_title(f"{smp.labels[0]}: {smp.phi}, {smp.labels[1]}: {smp.theta}, {smp.labels[2]}: {smp.psi}")
