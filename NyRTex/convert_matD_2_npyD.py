@@ -3,7 +3,7 @@ import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 
-dir = Path(r"C:\Users\kcd17618\Documents\NyRTex\Cu_bolt_Forbes\Cu_bolt_Forbes")
+dir = Path(r"C:\Users\kcd17618\Documents\NyRTex\DDSteel\DDSteel_d")
 npdir = str(dir) + "_npy"
 
 if not Path(npdir).exists():

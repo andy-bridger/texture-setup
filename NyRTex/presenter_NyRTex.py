@@ -126,11 +126,13 @@ class NyrtexPresenter(Presenter):
         self.plot_goniometer(self.View.sample_ax)
         self.plot_sample_beam_paths()
         self.plot_sample_lab_Ks()
-        self.add_ax_to_plot(self.View.sample_ax, self.Model.mantex.sample.smp.get_rot(), (0,0,0.2))
+        s = self.Model.get_mesh_size()
+        self.add_ax_to_plot(self.View.sample_ax, self.Model.mantex.sample.smp.get_rot(), np.array((3,0,0))*s, 1)
 
         # Object Reference
         self.plot_ref_sample(self.View.object_ax)
-        self.add_ax_to_plot(self.View.object_ax, np.eye(3,3), (0.2,0,0))
+        s = self.Model.get_mesh_size()
+        self.add_ax_to_plot(self.View.object_ax, np.eye(3,3), np.array((3,0,0))*s, s)
         self.add_angles_titles()
 
         # Detector

@@ -74,6 +74,8 @@ class NyrtexMantex():
             det_reprs.append(self.get_cube(offset=det.position, size=[0.1, 0.1, 0.1], use_gonio=False))
             det_cols.append([self.detector_colors[idet]] * 3)
         return source_repr, source_col, det_reprs, det_cols
+    def get_mesh_size(self):
+        return np.linalg.norm(self.sample.get_mesh_vectors()[:,0,:], axis = 1).max()
 
 
 
