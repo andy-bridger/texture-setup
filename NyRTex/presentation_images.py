@@ -104,4 +104,35 @@ def fig2():
     ax.set_zlim([-4 * length, 4 * length])
     plt.show()
 
-fig1()
+def step_through():
+    # define normalisation function
+    norm = lambda x: x/np.linalg.norm(x)
+
+    # define positions in NyRTex convention
+    detector = np.array((-0.23920163 ,1.47774882 ,0. ))
+    source = np.array((-2,0,0))
+    sample = np.array((0,0,0))
+
+    # calculate K
+    ki = norm(sample-source)
+    kd = norm(detector-sample)
+    K = norm(kd-ki)
+
+    # project through x (gravity direction,z, rotated by 90 degrees about the detector direction,y)
+    opposite_pole = np.array((-np.sign(K[0]), 0, 0))
+    vec_K_2_opp_pole = norm(opposite_pole - K)
+    u = -K[0]/vec_K_2_opp_pole[0] #amount of vec_K_2_oppo_pole to add to K to hit the plane x=0
+    projected_detector = K + u*vec_K_2_opp_pole
+
+    # get the polare coordinates
+    in_plane_proj_det = projected_detector[1:] #only y and z components
+    r = np.linalg.norm(in_plane_proj_det)
+    theta = np.arctan(in_plane_proj_det[0]/in_plane_proj_det[1])
+    polar_coordinate = np.array((r,np.rad2deg(theta))) #where the initial detector direction is y in proj and beam direction is x
+    return polar_coordinate
+
+step_through()
+
+
+
+
