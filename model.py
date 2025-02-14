@@ -34,7 +34,7 @@ class Mantex():
         ki = norm(self.sample_position - self.source.position)
         Ks = []
         for det in self.detectors:
-            K = norm(norm(det.position - self.sample_position) - ki)
+            K = -norm(norm(det.position - self.sample_position) - ki)
             Ks.append(K)
             det.K = K
         return Ks
