@@ -53,9 +53,11 @@ class NyrtexView(View):
             artists.append(ax.plot(r[:,0], (r[:,1])+(i*0.002), c = cols[i], alpha = alpha))
         return artists
     def label_detectors(self, ax, Ks, scale):
+        artists = []
         for i, K in enumerate(Ks):
-            ax.text(*K*scale, str(i))
+            artists.append(ax.text(*K*scale, str(i), ha = "center", va = "center", fontsize = "small"))
             print(f"det {i} has K vec: {K}")
+        return artists
     def plot_pole_figure_position(self, ax, pole_figure_points, detector_colors, eq):
         artists = []
         size = 100 / len(detector_colors)

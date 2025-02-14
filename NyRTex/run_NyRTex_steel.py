@@ -63,7 +63,7 @@ drs = np.asarray([np.concatenate((load_det_red(f"{det_r_dir}/ENOR00{run}.npy", s
 
 exp_data = ExperimentalData(detectors, 'DDSteel', from_data= False)
 exp_data.detector_readouts = drs #(run, det, reading_num,Q/sig)
-exp_data.smps = [Goniometer(1, int(ang[0]), int(ang[1]) ,int(ang[2]), scheme = 'rot1' ) for ang in angs]
+exp_data.smps = [Goniometer(1, int(ang[0]), int(ang[1]) ,int(ang[2]), scheme = 'euler' ) for ang in angs]
 
 source = Source(np.roll(np.load(f"{info_dir}/source_pos.npy"), 1)) # should be defined with det at -x
 sample = SampleObject((0.,0.,0.), GenericStateMatrixProvider(np.eye(3), np.zeros(3)),

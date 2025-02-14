@@ -50,6 +50,7 @@ class NyrtexPresenter(Presenter):
                                                                   self.Model.get_norm_detector_vectors())
         self.source_path_artists = self.View.plot_lab_source_path(self.View.sample_ax, -self.Model.mantex.ki,
                                                                   self.Model.mantex.ki)
+        self.det_path_artists += self.View.label_detectors(self.View.sample_ax, [det.position for det in self.Model.mantex.detectors], 0.8)
 
     def plot_lab_Ks(self):
         self.lab_K_vec_artists = self.View.plot_lab_K_vecs(self.View.lab_ax,
@@ -64,6 +65,7 @@ class NyrtexPresenter(Presenter):
                                                            self.Model.mantex.Ks,
                                                            self.Model.detector_colors,
                                                            scale = self.Model.r_dict['k_vecs'])
+        self.lab_K_vec_artists += self.View.label_detectors(self.View.sample_ax, self.Model.mantex.Ks, 0.8)
 
     def plot_pole_figure_detectors(self):
         self.pole_figure_detector_artists = self.View.plot_pole_figure_position(self.View.pole_proj_ax,
@@ -156,6 +158,7 @@ class NyrtexPresenter(Presenter):
                                                 det_repr,
                                                 det_cols[i]) for i, det_repr in enumerate(det_reprs)]
         self.View.label_detectors(self.View.lab_ax, self.Model.mantex.Ks, self.Model.r_dict['k_vecs']*10)
+        self.View.label_detectors(self.View.lab_ax, [det.position for det in self.Model.mantex.detectors], 1)
 
     def add_angles_titles(self):
         smp = self.Model.mantex.sample.smp
